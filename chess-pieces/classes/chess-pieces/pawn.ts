@@ -4,52 +4,67 @@ export class Pawn implements Piece {
   public id: string;
   public color: Color;
   private hasMoved:boolean = false
+  private direction:number 
 
   constructor(color: Color) {
     this.id = color === Color.BLACK ? "♙" : "♟"
     this.color = color
+    this.direction = color === Color.BLACK ? -1 : 1
+
   }
+
+  pawnMoveCheck(from:ChessTile,to:ChessTile,):boolean {
+    const [fromRow,fromCol] = from.index
+    const [toRow, toCol] = to.index
+
+    if(toCol !== fromCol) return false
+    const distance = toRow - fromRow
+
+    return this.isTwoSpacesRuleAvailable(distance) || this.isRegularMove(distance)
+
+  }
+
+
+  isTwoSpacesRuleAvailable(distance:number):boolean {
+    if(!this.hasMoved && distance === 2*this.direction) {
+      return true
+    }
+    return false
+  }
+
+
+  isRegularMove(distance:number):boolean {
+    if(distance === this.direction) {
+      return true
+    }
+
+    return false
+  }
+
 
   //TODO:Promotion Logic
 
-  pawnMoveChecker(from:ChessTile,to:ChessTile): boolean {
-    const { index:[toRow,toCol], piece } = to;
-    const { index:[fromRow,fromCol]} = from;
-    const difRow = toRow - fromRow;
-    const difCol = toCol - fromCol;
-
-    const direction = this.color === Color.BLACK ? -1 : 1;
-
-    //Pawn moves forward in the same column
-    if (difCol === 0 && !piece) {
-    //Pawn only move 1 space ahead except first turn  
-      if(difRow === direction) {
-        return true
-      } else if(difRow === 2*direction && !this.hasMoved) {
-        // console.log("special move")
-        return true
-      } else {
-        return false
-      }
-    }
+  isMoveValid(from:ChessTile,to:ChessTile): boolean {
+   
+    return this.pawnMoveCheck(from,to)
 
     //Pawn can move diagonally when capturing an opponent piece
-    if (
-      difRow === direction &&
-      Math.abs(difCol) === 1 &&
-      piece?.color !== this.color
-    ) {
-        return true;
-    }
+    // if (
+    //   difRow === direction &&
+    //   Math.abs(difCol) === 1 &&
+    //   piece?.color !== this.color
+    // ) {
+    //     return true;
+    // }
 
     
-    return false;
+    // return false;
   }
 
   //Pawn moves one space ahead
   move(from:ChessTile, to:ChessTile):boolean{
 
-    if (!this.pawnMoveChecker(from,to)) {
+    if (!this.isMoveValid(from,to)) {
       console.log("not a valid position for a pawn", to.index);
       return false;
     }
