@@ -1,5 +1,5 @@
 import { BoardCreator } from ".";
-import { Color, Piece, PieceType } from "../types";
+import { CastlingType, Color, Piece, PieceType, PlayerMove } from "../types";
 import { stringToPieceType } from "../const";
 
 const prompts = require("prompt-sync")();
@@ -12,8 +12,7 @@ class ChessGame {
 
   main() {
     console.log("Welcome to Terminal Chess");
-    this.playChessGame()
-   
+    this.playChessGame();
   }
 
   playChessGame() {
@@ -33,76 +32,86 @@ class ChessGame {
   }
 
   movePiece(notation: string, turn: Color): boolean {
-    let leftOverNotation: string = notation;
-
-    //TODO: Enroque input
-    if (leftOverNotation === "0-0-0") {
-      //Only move for the rock king
-    } else if (leftOverNotation === "0-0-0-0") {
-      //only move for the rock queen
+    if (notation === "0-0") {
+      return this.castlingMove("QUEENSIDE", turn);
+    } else if (notation === "0-0-0") {
+      return this.castlingMove("KINGSIDE", turn);
     }
 
-    if (leftOverNotation.length < 1 || leftOverNotation.length > 4) {
-      console.log("Invalid Move: Incorrect format");
+    const playerMove: PlayerMove | null = this.parseNotation(notation);
+
+    if (!playerMove) {
+      console.log("Invalid notation format: ", notation);
       return false;
     }
 
-    //Ex: Nd2 => N // d2 => "" // Nxd2 => Nx // exd2 => ex
-    const stringDestination = leftOverNotation.slice(-2);
-    console.log("string Destination", stringDestination);
-    const destination = this.notationToCoordinates(stringDestination);
-    console.log("destination", destination);
+    const {
+      piece,
+      ambiguityBreaker,
+      isCapture,
+      destination: sDestination,
+    } = playerMove;
 
+    console.log("move", playerMove);
+    const destination = this.notationToCoordinates(sDestination);
+    console.log("destination", destination);
     const isInBounds = this.isCoordinatesInsideBounds(destination);
     if (!isInBounds) {
       console.log(`Move ${notation} Invalid: out of bounds `);
       return false;
     }
 
-    leftOverNotation = leftOverNotation.slice(0, -2);
-    // console.log("notation pending", leftOverNotation)
-
-    //Ex: N => "" // "" => "" //  Bx => x // ex => x => if there is capture, an x will always remain
-    const stringPiece = leftOverNotation.slice(0, 1);
-
-    const selectedPiece: PieceType | null = this.getPieceType(stringPiece);
-
-    console.log("selected Piece", selectedPiece);
-    leftOverNotation = leftOverNotation.slice(1);
-    // console.log("notation pending", leftOverNotation)
-
-    if (!selectedPiece) {
-      console.log(`Move ${notation} Invalid: No piece called ${stringPiece}`);
-      return false;
-    }
-
-    const availablePieces = this.getAvailablePieces(selectedPiece, turn);
+    const availablePieces: Piece[] = this.getAvailablePieces(piece, turn);
 
     if (availablePieces.length === 0) {
-      console.log("Move Invalid: No pieces available to do current move");
+      console.log(`Move Invalid: no pieces available with move: ${notation}`);
     }
 
-    if (leftOverNotation === "x") {
-      console.log("Capturing Move");
-      return this.captureMove(availablePieces, destination,turn);
-    } else {
-      console.log("Regular Move");
-      return this.regularMove(availablePieces, destination);
+    if (isCapture) {
+      return this.captureMove(
+        availablePieces,
+        destination,
+        turn,
+        ambiguityBreaker
+      );
     }
+
+    return this.regularMove(availablePieces, destination, ambiguityBreaker);
+
   }
 
-  private regularMove(pieces: Piece[], destination: [number, number]): boolean {
-    const validPieces = pieces.filter((piece) =>
+  castlingMove(type: CastlingType, turn: Color): boolean {
+    throw new Error("Method not implemented yet.");
+  }
+
+  private regularMove(
+    pieces: Piece[],
+    destination: [number, number],
+    ambiguityBreaker: string | null
+  ): boolean {
+    let validPieces = pieces.filter((piece) =>
       piece.move(destination, this.boardCreator.board)
     );
-    if (validPieces.length > 1) {
-      console.log("Move Invalid, ambiguity");
-      //TODO: Logic to break ambiguity
-      return false;
-    } else if (validPieces.length === 0) {
-      console.log("Move Invalid, no pieces available to make that move");
+
+    if (validPieces.length === 0) {
+      console.log("Move Invalid: Invalid Move");
       return false;
     }
+
+    if (validPieces.length > 1) {
+      if (ambiguityBreaker) {
+        validPieces = this.breakAmbiguity(validPieces, ambiguityBreaker);
+      } else {
+        console.log("Ambiguity Error: No ambiguity break detected");
+        return false;
+      }
+    }
+
+    if (validPieces.length !== 1) {
+      console.log("Move Invalid: Error during piece selection");
+      return false;
+    }
+
     const [row, col] = validPieces[0].position!;
     validPieces[0].position = destination;
     this.boardCreator.board[row][col] = "   ";
@@ -113,76 +122,101 @@ class ChessGame {
   private captureMove(
     pieces: Piece[],
     destination: [number, number],
-    turn: Color
+    turn: Color,
+    ambiguityBreaker: string | null
   ): boolean {
-    const validPieces = pieces.filter((piece) =>
+    let validPieces = pieces.filter((piece) =>
       piece.capture(destination, this.boardCreator.board)
     );
-    console.log("capture valid", validPieces);
-    if (validPieces.length > 1) {
-      console.log("Move Invalid, ambiguity");
-      //TODO: Logic to break ambiguity
-      return false;
-    } else if (validPieces.length === 0) {
-      console.log("Move Invalid, no pieces available to make that move");
+
+    if (validPieces.length === 0) {
+      console.log("Capture Invalid: no available piece to make that move");
       return false;
     }
 
-    if (turn === Color.WHITE) {
-      this.eliminateBlackPiece(destination[0], destination[1]);
-      console.log("black remaining", this.boardCreator.blackPieces.length)
-    } else {
-      this.eliminateWhitePiece(destination[0], destination[1]);
-      console.log("white remaining", this.boardCreator.whitePieces.length)
+    if (validPieces.length > 1) {
+      if (ambiguityBreaker) {
+        validPieces = this.breakAmbiguity(validPieces, ambiguityBreaker);
+      } else {
+        console.log("Ambiguity Error: No ambiguity break detected");
+        return false;
+      }
     }
+
+    if (validPieces.length !== 1) {
+      console.log("Move Invalid: Error during piece selection");
+      return false;
+    }
+
+    this.eliminatePiece(destination[0], destination[1], turn);
 
     const [row, col] = validPieces[0].position;
     validPieces[0].position = destination;
     this.boardCreator.board[row][col] = "   ";
     return true;
-
   }
 
-  private eliminateWhitePiece(row: number, col: number) {
-    this.boardCreator.whitePieces = this.boardCreator.whitePieces.filter(
-      (piece) =>
-        piece.position && piece.position[0] !== row && piece.position[1] !== col
+  private breakAmbiguity(
+    validPieces: Piece[],
+    ambiguityBreaker: string
+  ): Piece[] {
+    // console.log(`Handling ambiguity of pieces ${validPieces[0].type}`)
+    const file = ambiguityBreaker.charCodeAt(0) - "a".charCodeAt(0);
+    const filterPieces: Piece[] = validPieces.filter(
+      (piece) => piece.position[1] === file
     );
-  }
 
-  private eliminateBlackPiece(row: number, col: number) {
-    this.boardCreator.blackPieces = this.boardCreator.blackPieces.filter(
-      (piece) =>
-        piece.position && piece.position[0] !== row && piece.position[1] !== col
-    );
-  }
-
-  private getPieceType(pieceNotation: string): PieceType | null {
-    if (/^[a-h]$/.test(pieceNotation)) {
-      return PieceType.PAWN;
+    if (filterPieces.length !== 1) {
+      console.log(
+        `Ambiguity not broken between ${filterPieces[0].type}s`
+      );
+      return filterPieces;
     }
 
-    const pieceType: PieceType = stringToPieceType[pieceNotation];
+    return filterPieces;
+  }
 
-    if (!pieceType) {
-      console.log(`Piece ${pieceNotation} not found`);
-      return null;
-    }
+  private eliminatePiece(row: number, col: number, turn: Color) {
+    const pieces = turn === Color.BLACK ? "whitePieces" : "blackPieces";
 
-    return pieceType;
+    this.boardCreator[pieces] = this.boardCreator[pieces].filter(
+      (piece) =>
+        piece.position &&
+        !(piece.position[0] === row && piece.position[1] === col)
+    );
+
+    console.log(`${pieces} remaining: ${this.boardCreator[pieces].length}`)
+
+    this.boardCreator.board[row][col] = "   ";
   }
 
   private getAvailablePieces(type: PieceType, turn: Color): Piece[] {
     const result: Piece[] =
       turn === Color.WHITE
-        ? this.boardCreator.whitePieces.filter(
-            (piece) => piece.type === type && piece.position !== null
-          )
-        : this.boardCreator.blackPieces.filter(
-            (piece) => piece.type === type && piece.position !== null
-          );
+        ? this.boardCreator.whitePieces.filter((piece) => piece.type === type)
+        : this.boardCreator.blackPieces.filter((piece) => piece.type === type);
 
     return result;
+  }
+
+  private parseNotation(notation: string): PlayerMove | null {
+    const notationRegex = /^([KQRBN]?)([a-h]?[1-8]?)(x?)([a-h][1-8])$/;
+
+    const match = notation.match(notationRegex);
+
+    if (!match) {
+      return null;
+    }
+    const [_, piece, ambiguity, capture, destination] = match;
+
+    const pieceType: PieceType = stringToPieceType[piece || "P"];
+
+    return {
+      piece: pieceType,
+      ambiguityBreaker: ambiguity || null,
+      isCapture: capture === "x",
+      destination,
+    };
   }
 
   private isCoordinatesInsideBounds(destination: [number, number]): boolean {
@@ -199,7 +233,6 @@ class ChessGame {
     const rank = parseInt(notation[1]) - 1;
     return [rank, file];
   }
-
 }
 
 const chessGame = new ChessGame();

@@ -6,3 +6,5 @@ export enum PieceType {
     QUEEN = "queen",
     KING  = "king",
 }
+
+export type CastlingType = "QUEENSIDE" | "KINGSIDE"
