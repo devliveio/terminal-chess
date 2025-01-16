@@ -1,4 +1,4 @@
-import { ChessTile, Color, PieceType } from "."
+import { Color, PieceType } from "."
 
 export interface Piece {
     type:PieceType

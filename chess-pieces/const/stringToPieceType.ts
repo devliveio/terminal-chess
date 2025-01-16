@@ -1,7 +1,7 @@
 import { PieceType } from "../types";
 
 export const stringToPieceType: { [key: string]: PieceType } = {
-  "": PieceType.PAWN,
+  P: PieceType.PAWN,
   N: PieceType.KNIGHT,
   B: PieceType.BISHOP,
   R: PieceType.ROOK,
