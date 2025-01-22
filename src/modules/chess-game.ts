@@ -15,7 +15,7 @@ class ChessGame {
     this.playChessGame();
   }
 
-  playChessGame() {
+  private playChessGame() {
     let turn: Color = Color.WHITE;
 
     while (true) {

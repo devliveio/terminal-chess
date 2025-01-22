@@ -1,0 +1,58 @@
+;
+import { PieceColor, PIECES_VALUES, PieceType } from "../../shared/types";
+import { Bishop, King, Knight, Pawn, Piece, Queen, Rook } from "../pieces";
+
+class PiecesFactory {
+  constructor(private color: PieceColor) {
+    this.color = color;
+  }
+
+  createPiece(type: PieceType): Piece {
+    const pieceValue: number = PIECES_VALUES[type];
+
+    const hashPieceCreation: { [key in PieceType]: Piece } = {
+      [PieceType.PAWN]: this.createPawn(pieceValue),
+      [PieceType.ROOK]: this.createRook(pieceValue),
+      [PieceType.BISHOP]: this.createBishop(pieceValue),
+      [PieceType.KNIGHT]: this.createKnight(pieceValue),
+      [PieceType.QUEEN]: this.createQueen(pieceValue),
+      [PieceType.KING]: this.createKing(pieceValue),
+    };
+
+    const piece: Piece | undefined = hashPieceCreation[type];
+
+    if (!piece) {
+      throw new Error(`Piece ${type} not found in factory`);
+    }
+
+    return piece;
+  }
+
+  private createPawn(value: number): Piece {
+    return new Pawn(this.color, value);
+  }
+
+  private createRook(value: number): Piece {
+    return new Rook(this.color, value);
+  }
+
+  private createKnight(value: number): Piece {
+    return new Knight(this.color, value);
+  }
+
+  private createBishop(value: number): Piece {
+    return new Bishop(this.color, value);
+  }
+
+  private createQueen(value: number): Piece {
+    return new Queen(this.color, value);
+  }
+
+  private createKing(value: number): Piece {
+    return new King(this.color, value);
+  }
+}
+
+export const whitePiecesFactory = new PiecesFactory("white")
+
+export const blackPiecesFactory = new PiecesFactory("black")
