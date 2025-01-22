@@ -1,0 +1,6 @@
+export * from "./color"
+export * from "./chess-board"
+export * from "./piece"
+export * from "./piecesFactory"
+export * from "./pieceType"
+export * from "./playerMove"
