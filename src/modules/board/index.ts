@@ -1,57 +1,111 @@
-
-import { PieceType } from "../../shared/types";
+import {
+  BLACK_PIECES_SYMBOLS,
+  PieceColor,
+  PieceType,
+  WHITE_PIECES_SYMBOLS,
+} from "../../shared/types";
 import { Piece } from "../pieces";
 import { blackPiecesFactory, whitePiecesFactory } from "../pieces-factory";
 
 export class Board {
   private board: (Piece | null)[][];
+  public piecesPosition: { [key in string]: (number[] | null)[] } = {};
+  private _size: number = 8;
 
   constructor() {
-    this.board = this.prepareBoard();
+    this.board = this.createEmptyBoard();
   }
 
-  private prepareBoard(): (Piece | null)[][] {
-    const emptyBoard: (Piece | null)[][] = Array.from({ length: 8 }, () =>
-      Array.from({ length: 8 }, () => null)
+  public get size(): number {
+    return this._size;
+  }
+
+  getPieceAtPosition(position: [number, number]): Piece | null {
+    return this.board[position[0]][position[1]];
+  }
+
+  private createEmptyBoard(): (Piece | null)[][] {
+    const emptyBoard: (Piece | null)[][] = Array.from(
+      { length: this.size },
+      () => Array.from({ length: this.size }, () => null)
     );
-    return this.addPieces(emptyBoard);
+    return emptyBoard;
+  }
+
+  init(): void {
+    this.board = this.addPieces(this.board);
   }
 
   private addPieces(emptyBoard: (Piece | null)[][]): (Piece | null)[][] {
     const boardWithPieces = emptyBoard;
-
-    const backRow: PieceType[] = [
-      PieceType.ROOK,
-      PieceType.KNIGHT,
-      PieceType.BISHOP,
-      PieceType.QUEEN,
-      PieceType.KING,
-      PieceType.ROOK,
-      PieceType.KNIGHT,
-      PieceType.BISHOP,
-    ];
-    backRow.forEach((piece, index) => {
-      boardWithPieces[0][index] = whitePiecesFactory.createPiece(piece);
-      boardWithPieces[1][index] = whitePiecesFactory.createPiece(
-        PieceType.PAWN
-      );
-      boardWithPieces[6][index] = blackPiecesFactory.createPiece(
-        PieceType.PAWN
-      );
-      boardWithPieces[7][index] = blackPiecesFactory.createPiece(piece);
-    });
-
+    this.prepareRows(0, "white");
+    this.prepareRows(7, "black");
     return boardWithPieces;
+  }
+
+  private prepareRows(rowIndex: number, color: PieceColor) {
+    const pieces: PieceType[] = Object.values(PieceType)
+    pieces.forEach((piece, index) => {
+      this.createPiece(piece, [rowIndex, index], color);
+      this.createPiece(
+        PieceType.PAWN,
+        [rowIndex + (color === "white" ? 1 : -1), index],
+        color
+      );
+    });
+  }
+
+  private createPiece(
+    pieceType: PieceType,
+    position: [number, number],
+    color: PieceColor
+  ) {
+    const newPiece =
+      color === "white"
+        ? whitePiecesFactory.createPiece(pieceType)
+        : blackPiecesFactory.createPiece(pieceType);
+    this.board[position[0]][position[1]] = newPiece;
+    this.setPiecesLocation(pieceType, position, color);
+  }
+
+  private setPiecesLocation(
+    pieceType: PieceType,
+    position: [number, number],
+    color: PieceColor
+  ) {
+    const index: string = `${color}-${pieceType}`;
+    if (this.piecesPosition[index]) {
+      this.piecesPosition[index].push(position);
+    } else {
+      this.piecesPosition[index] = [position];
+    }
+  }
+
+  getPiecesLocation(index: string): (number[] | null)[] {
+    return this.piecesPosition[index];
   }
 
   print() {
     const topBorder = "  +----+----+----+----+----+----+----+----+";
 
     console.log("    a     b    c    d    e    f    g    h ");
+    console.log(topBorder);
 
     for (let row = this.board.length - 1; row >= 0; row--) {
       const rowString =
-        this.board[row].map((cell) => `|${cell}`).join(" ") + " |";
+        this.board[row]
+          .map((piece) => {
+            let cellSymbol: string = " ";
+            if (piece) {
+              cellSymbol =
+                piece.color === "white"
+                  ? WHITE_PIECES_SYMBOLS[piece.type]
+                  : BLACK_PIECES_SYMBOLS[piece.type];
+            }
+
+            return `| ${cellSymbol} `;
+          }).join(" ") + " |";
+
       console.log(`${row + 1} ${rowString} ${row + 1}`);
       console.log(topBorder);
     }
@@ -59,7 +113,3 @@ export class Board {
     console.log("    a     b    c    d    e    f    g    h ");
   }
 }
-
-const board = new Board();
-
-console.log(board.print());
