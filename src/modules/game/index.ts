@@ -1,18 +1,25 @@
-import { PieceColor } from "../../shared/types";
-import { Board } from "../board";
-import { InvalidMoveError } from "../error";
-import { MoveHandler } from "../move-handler";
-import PromptSync = require("prompt-sync");
+import * as PromptSync from 'prompt-sync'
 
-const prompt = PromptSync();
+import { Board } from '../board'
+
+import { InvalidMoveError } from '../error'
+
+import { MoveHandler } from '../move-handler'
+
+import { PieceColor } from '../../shared/types'
+
+const prompt = PromptSync()
 
 export class Game {
-  private board: Board = new Board();
-  private moveHandler: MoveHandler = new MoveHandler();
+  private board: Board
+  private moveHandler: MoveHandler = new MoveHandler()
+
+  constructor() {
+    this.board = new Board()
+  }
 
   play() {
-    this.board.prepareBoard();
-    let turn: PieceColor = "white";
+    let turn: PieceColor = "white"
     let showInformation:boolean = true
     let numOfTurns:number = 1
 
@@ -34,12 +41,12 @@ export class Game {
         - Example castling: "0-0" (King side castling)
         - "exit": End the game
         - "toggle": toggle information log
-    `);
-    this.board.print();
-    console.log(`It is ${turn}´s turn`);
-      const input: string = prompt("Enter your move: ") || "";
+    `)
+    this.board.print()
+    console.log(`It is ${turn}´s turn`)
+      const input: string = prompt("Enter your move: ") || ""
 
-      if (input === "exit") break;
+      if (input === "exit") break
 
       if (input === "toggle") {
         showInformation = !showInformation
@@ -47,19 +54,19 @@ export class Game {
       }
 
       try {
-        this.moveHandler.processMove(input, turn, this.board);
+        this.moveHandler.processMove(input, turn, this.board)
         if (this.endGame()) {
-          console.log("Checkmate");
-          return;
+          console.log("Checkmate")
+          return
         }
-        turn = turn === "white" ? "black" : "white";
+        turn = turn === "white" ? "black" : "white"
         numOfTurns++
       } catch (error) {
         if (error instanceof InvalidMoveError) {
-          console.log(`Invalid Move: ${error.message}, please try again`);
+          console.log(`Invalid Move: ${error.message}, please try again`)
         } else {
-          console.error("Unexpected error occurred:", error);
-          break;
+          console.error("Unexpected error occurred:", error)
+          break
         }
       }
     }
@@ -67,6 +74,6 @@ export class Game {
 
   endGame(): boolean {
     //TODO:Implementar logica de fin de juego
-    return false;
+    return false
   }
 }
