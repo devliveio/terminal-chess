@@ -12,8 +12,8 @@ export class Pawn extends Piece {
   private readonly NORMAL_STEPS: number = 1
   private readonly CAPTURE_STEPS_COL: number = 1
 
-  constructor(color: PieceColor, value: number, type: PieceType) {
-    super(color, value, type)
+  constructor(color: PieceColor, type: PieceType) {
+    super(color, 1, type)
     this.direction = color === 'white' ? 1 : -1
   }
 

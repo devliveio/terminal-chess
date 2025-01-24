@@ -16,41 +16,27 @@ export class Game {
   }
 
   play() {
-    let turn: PieceColor = 'white'
-    let showInformation: boolean = true
-    let numOfTurns: number = 1
-
     console.log('Welcome to Terminal Chess')
 
-    while (true) {
-      console.log(`TURN ${numOfTurns}`)
+    this.printRules()
 
-      showInformation && this.printRules()
+    let showInfo: boolean = false
+
+    while (true) {
+      showInfo && this.printRules()
 
       this.board.print()
 
-      console.log(`It is ${turn}´s turn`)
+      const input: string = prompt(`${this.board.getPlayerTurn()}'s move: `)
 
-      const input: string = prompt('Enter your move: ') || ''
-
-      if (input === 'exit') break
+      console.clear()
 
       if (input === 'info') {
-        showInformation = !showInformation
-        continue
-      }
+        showInfo = !showInfo
+      } else if (input === 'exit') break
 
       try {
-        this.board.move(input, turn)
-
-        if (this.endGame()) {
-          console.log('Checkmate')
-          return
-        }
-
-        turn = turn === 'white' ? 'black' : 'white'
-
-        numOfTurns++
+        this.board.move(input)
       } catch (error) {
         if (error instanceof InvalidMoveError) {
           console.log(`Invalid Move: ${error.message}, please try again`)
@@ -60,11 +46,6 @@ export class Game {
         }
       }
     }
-  }
-
-  endGame(): boolean {
-    //TODO:Implementar logica de fin de juego
-    return false
   }
 
   private printRules() {
@@ -84,9 +65,3 @@ export class Game {
   `)
   }
 }
-
-const board = new ChessBoard()
-board.move('e4', 'white')
-board.print()
-board.move('e5', 'white')
-board.print()

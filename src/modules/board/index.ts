@@ -36,12 +36,16 @@ const backRowPieces: PieceType[] = [
 
 export class ChessBoard {
   private board: Board
+  private playerTurn: PieceColor
+
   private pieceRegistry: PiecesCoordinates
   private whitePiecesFactory: PiecesFactory
   private blackPiecesFactory: PiecesFactory
   private moveHandler: MoveHandler
 
   constructor() {
+    this.playerTurn = 'white'
+
     const size = { length: LAST_BOARD_ROW + 1 }
 
     this.board = Array.from(size, () => Array.from(size, () => null))
@@ -55,6 +59,10 @@ export class ChessBoard {
     this.moveHandler = new MoveHandler()
 
     this.addPieces()
+  }
+
+  public getPlayerTurn() {
+    return this.playerTurn
   }
 
   print(): void {
@@ -85,7 +93,11 @@ export class ChessBoard {
     console.log('    a     b    c    d    e    f    g    h ')
   }
 
-  move(notation: string, turn: PieceColor): void {
+  move2(notation: string) {
+    
+  }
+
+  move(notation: string): void {
     const notationComponents: NotationComponents | null =
       this.getNotationComponents(notation)
 
@@ -107,7 +119,7 @@ export class ChessBoard {
       throw new InvalidMoveError('Move is out of bounds')
     }
 
-    const index = `${turn}-${piece}`
+    const index = `${this.playerTurn}-${piece}`
 
     const pieces = this.getPiecesAtCoordinates(this.pieceRegistry[index])
 
@@ -124,28 +136,17 @@ export class ChessBoard {
     )
 
     this.updatePiecePosition(pieceToMove, destinationCoordinates)
+    this.nextTurn()
+  }
+
+  private nextTurn() {
+    this.playerTurn = this.playerTurn === 'white' ? 'black' : 'white'
   }
 
   private getPositionFromNotationComponent(notation: string): Coordinates {
     const file = notation.charCodeAt(0) - 'a'.charCodeAt(0)
     const rank = parseInt(notation[1]) - 1
     return [rank, file]
-  }
-
-  private getNotationComponents(notation: string): NotationComponents | null {
-    const notationRegex = /^([KQRBN]?)([a-h]?)(x?)([a-h][1-8])$/
-    const match = notation.match(notationRegex)
-    if (!match) {
-      return null
-    }
-    const [_, piece, ambiguity, takeSymbol, destination] = match
-
-    return {
-      piece: piece || PieceType.PAWN,
-      ambiguityBreaker: ambiguity || null,
-      takeSymbolPresent: takeSymbol === 'x',
-      destination,
-    }
   }
 
   private getPiecesAtCoordinates(positions: Coordinates[]): Piece[] {
