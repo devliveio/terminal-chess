@@ -1,67 +1,70 @@
-import * as PromptSync from 'prompt-sync'
-
-import { ChessBoard } from '../board'
-
-import { InvalidMoveError } from '../error'
-
-import { PieceColor } from '../../shared/types'
-
-const prompt = PromptSync()
+import { Board } from '../board'
 
 export class Game {
-  private board: ChessBoard
+  board: Board
+  currentTurn: 'white' | 'black'
+  notation: Notation
 
   constructor() {
-    this.board = new ChessBoard()
+    this.board = new Board()
+    this.currentTurn = 'white'
+    this.notation = new Notation()
   }
 
-  play() {
-    console.log('Welcome to Terminal Chess')
+  makeMove(move: string): boolean {
+    const parsedMove = this.notation.parseMove(move, this.board, this.currentTurn)
+    if (!parsedMove) return false
 
-    this.printRules()
+    const { from, to } = parsedMove
+    if (this.board.movePiece(from, to, this.currentTurn)) {
+      this.currentTurn = this.currentTurn === 'white' ? 'black' : 'white'
+      return true
+    }
 
-    let showInfo: boolean = false
+    return false
+  }
+}
 
-    while (true) {
-      showInfo && this.printRules()
+class Notation {
+  parseMove(move: string, board: Board, currentTurn: 'white' | 'black'): { from: string; to: string } | null {
+    const match = move.match(/^([KQBNR]?)([a-h]?)([1-8]?)(x?)([a-h][1-8])$/)
+    if (!match) return null
 
-      this.board.print()
+    const [, pieceSymbol, fileHint, rankHint, capture, to] = match
+    const targetPieceType = this.getPieceType(pieceSymbol)
 
-      const input: string = prompt(`${this.board.getPlayerTurn()}'s move: `)
+    const toPiece = board.getPieceAt(to)
+    if (capture && (!toPiece || toPiece.color === currentTurn)) return null
 
-      console.clear()
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const position = board.indicesToPosition(row, col)
+        const piece = board.getPieceAt(position)
 
-      if (input === 'info') {
-        showInfo = !showInfo
-      } else if (input === 'exit') break
-
-      try {
-        this.board.move(input)
-      } catch (error) {
-        if (error instanceof InvalidMoveError) {
-          console.log(`Invalid Move: ${error.message}, please try again`)
-        } else {
-          console.error('Unexpected error occurred:', error)
-          break
+        if (
+          piece &&
+          piece.color === currentTurn &&
+          piece.constructor.name === targetPieceType &&
+          (!fileHint || position[0] === fileHint) &&
+          (!rankHint || position[1] === rankHint) &&
+          piece.canMove(position, to, board)
+        ) {
+          return { from: position, to }
         }
       }
     }
+
+    return null
   }
 
-  private printRules() {
-    console.log(`Information:
-      - P: Pawn
-      - N: Knight
-      - B: Bishop
-      - R: Rook
-      - Q: Queen
-      - K: King
-      - Example move a Pawn notation: 'e4' (Pawn moves to e4)
-      - Example piece move: 'Nf3' (Knight moves to f3)
-      - Example move with capture: 'Nxf3' (Knight captures piece on f3)
-      - Example castling: '0-0' (King side castling)
-      - 'exit': End the game
-      - 'info': show|hide Information
-  `)
+  getPieceType(symbol: string): string {
+    switch (symbol) {
+      case 'K': return 'King'
+      case 'Q': return 'Queen'
+      case 'R': return 'Rook'
+      case 'B': return 'Bishop'
+      case 'N': return 'Knight'
+      default: return 'Pawn'
+    }
   }
 }
