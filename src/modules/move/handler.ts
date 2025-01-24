@@ -1,7 +1,7 @@
 import { Castling, NotationComponents, PieceColor } from "../../shared/types";
 import { Board } from "../board";
 import { InvalidMoveError } from "../error";
-import { MoveValidator } from "../move-validator";
+import { MoveValidator } from "./validator";
 import { NotationParser } from "../notation-parser";
 
 export class MoveHandler {

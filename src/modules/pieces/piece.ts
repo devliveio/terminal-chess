@@ -1,6 +1,6 @@
 import { Board } from '../board';
 
-import { MoveValidator } from '../move-validator';
+import { MoveValidator } from '../move/validator';
 
 import { PieceColor, PieceType } from '../../shared/types';
 

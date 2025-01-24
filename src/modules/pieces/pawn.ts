@@ -2,7 +2,7 @@ import { Piece } from "./piece";
 import { PieceColor, PieceType } from "../../shared/types";
 import { Board } from "../board";
 import { InvalidMoveError } from "../error";
-import { MoveValidator } from "../move-validator";
+import { MoveValidator } from "../move/validator";
 
 export class Pawn extends Piece {
   private hasMoveOnce: boolean = false;
