@@ -29,27 +29,27 @@ class PiecesFactory {
   }
 
   private createPawn(value: number): Piece {
-    return new Pawn(this.color, value);
+    return new Pawn(this.color, value,PieceType.PAWN);
   }
 
   private createRook(value: number): Piece {
-    return new Rook(this.color, value);
+    return new Rook(this.color, value,PieceType.ROOK);
   }
 
   private createKnight(value: number): Piece {
-    return new Knight(this.color, value);
+    return new Knight(this.color, value,PieceType.KNIGHT);
   }
 
   private createBishop(value: number): Piece {
-    return new Bishop(this.color, value);
+    return new Bishop(this.color, value,PieceType.BISHOP);
   }
 
   private createQueen(value: number): Piece {
-    return new Queen(this.color, value);
+    return new Queen(this.color, value,PieceType.QUEEN);
   }
 
   private createKing(value: number): Piece {
-    return new King(this.color, value);
+    return new King(this.color, value,PieceType.KING);
   }
 }
 

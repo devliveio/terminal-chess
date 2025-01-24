@@ -1,17 +1,19 @@
-import { PieceColor } from "../../shared/types";
-import { Piece } from "./piece"; // Adjust the path as necessary
-
+import { PieceColor, PieceType } from "../../shared/types";
 import { Board } from "../board";
-
+import { Piece} from "./piece"
 
 export class Bishop extends Piece {
-    
-    constructor(color:PieceColor,value:number) {
-        super(color,value)
-
-    }
-
-    public move(board: Board, destination: [number, number]): void {
+    public move(board: Board, startPosition: number[], endPosition: number[]): void {
         throw new Error("Method not implemented.");
     }
+    public isMoveValid(board: Board, destination: number[], startPosition: number[], isCapturing: boolean): boolean {
+        throw new Error("Method not implemented.");
+    }
+    
+    constructor(color:PieceColor,value:number,type:PieceType) {
+        super(color,value,type)
+
+    }
+
+
 }

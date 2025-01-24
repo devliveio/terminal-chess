@@ -1,125 +1,109 @@
-import { Piece } from ".";
-import { PieceColor } from "../../shared/types";
+import { Piece } from "./piece";
+import { PieceColor, PieceType } from "../../shared/types";
 import { Board } from "../board";
+import { InvalidMoveError } from "../error";
+import { MoveValidator } from "../move-validator";
 
 export class Pawn extends Piece {
+  private hasMoveOnce: boolean = false;
+  private direction: number;
+  private readonly ADVANCE_STEPS:number = 2
+  private readonly NORMAL_STEPS:number = 1
+  private readonly CAPTURE_STEPS_COL:number = 1
 
-    constructor(color:PieceColor,value:number) {
-        super(color,value)
 
+  constructor(color: PieceColor, value: number, type: PieceType) {
+    super(color, value, type);
+    this.direction = color === "white" ? 1 : -1;
+  }
+
+  public move(
+    board: Board,
+    startPosition: number[],
+    endPosition: number[]
+  ): void {
+    const capturePiece = board.getPieceAtPosition(endPosition);
+    const currentPiece = board.getPieceAtPosition(startPosition);
+
+    if (capturePiece) {
+      board.updatePiecePositionInBoard(endPosition, null, capturePiece);
     }
 
-    public move(board: Board, destination: [number, number]): void {
-        throw new Error("Method not implemented.");
+    if (!currentPiece) {
+      throw new InvalidMoveError("No piece at the starting position");
+    }
+    if (!this.hasMoveOnce) {
+      this.hasMoveOnce = true;
     }
 
-//     import { Color, Piece, PieceType } from "../../types";
-// import { CHESS_PIECES_REP } from "../../const";
+    return board.updatePiecePositionInBoard(
+      startPosition,
+      endPosition,
+      currentPiece
+    );
+  }
 
-// const BLACK_PIECES: string = "♙ ♗ ♖ ♔ ♕ ♘";
-// const WHITE_PIECES: string = "♟ ♝ ♜ ♚ ♛ ♞ ";
-// export class Pawn implements Piece {
-//   public type: PieceType = PieceType.PAWN;
-//   private hasMoved: boolean = false;
-//   public rep: string;
-//   public color: Color;
-//   private direction: number;
-//   public position: [number, number];
+  private isValidMoveForward(
+    startRow: number,
+    finalRow: number,
+    finalCol: number,
+    board: Board
+  ): boolean {
 
-//   constructor(color: Color, startPosition: [number, number]) {
-//     this.rep =
-//       color === Color.WHITE
-//         ? CHESS_PIECES_REP[this.type][0]
-//         : CHESS_PIECES_REP[this.type][1];
-//     this.color = color;
-//     this.direction = color === Color.BLACK ? -1 : 1;
-//     this.position = startPosition;
-//   }
+    if (!MoveValidator.isColPathFree(startRow,finalRow,finalCol,board)) {
+      return false
+    }
 
-//   isCaptureValid(to: [number, number], chessBoard: string[][]): boolean {
-//     const [toRow, toCol] = to;
-//     const [fromRow, fromCol] = this.position;
+    if(this.isTwoSpacesRuleAvailable(startRow,finalRow)) {
+      return true
+    }
 
-//     return (
-//       this.isMovingDiagonally(fromCol, toCol) &&
-//       this.isOpponentPiece(toRow, toCol, chessBoard) &&
-//       this.isMovingOneForward(fromRow, toRow)
-//     );
-//   }
+    if(MoveValidator.isMovingNSteps(startRow,finalRow,this.NORMAL_STEPS*this.direction)) {
+      return true
+    }
 
-//   isMovingDiagonally(fromCol: number, toCol: number): boolean {
-//     return Math.abs(fromCol - toCol) === 1;
-//   }
+    return false
 
-//   isOpponentPiece(
-//     toRow: number,
-//     toCol: number,
-//     chessBoard: string[][]
-//   ): boolean {
-//     return this.color === Color.WHITE
-//       ? BLACK_PIECES.includes(chessBoard[toRow][toCol].trim())
-//       : WHITE_PIECES.includes(chessBoard[toRow][toCol].trim());
-//   }
+  }
 
-//   isMoveValid(to: [number, number], chessBoard: string[][]): boolean {
-//     const [toRow, toCol] = to;
-//     const [fromRow, fromCol] = this.position;
+  private isValidCapture(
+    finalRow: number,
+    finalCol: number,
+    board: Board,
+    hasTakeSymbol: boolean
+  ) {
+    if (hasTakeSymbol && this.isOpponentPiece(finalRow, finalCol, board)) {
+      return true;
+    }
+    return false;
+  }
 
-//     if (toCol !== fromCol) return false;
+  private isTwoSpacesRuleAvailable(
+    startRow: number,
+    finalRow: number
+  ): boolean {
+    return (
+      !this.hasMoveOnce && MoveValidator.isMovingNSteps(startRow, finalRow, this.ADVANCE_STEPS*this.direction)
+    );
+  }
 
-//     return (
-//       this.isSpaceFree(toRow, toCol, chessBoard) &&
-//       this.isMovingInCol(fromCol, toCol) &&
-//       (this.isTwoSpacesRuleAvailable(fromRow, toRow) ||
-//         this.isMovingOneForward(fromRow, toRow))
-//     );
-//   }
+  isMoveValid(
+    board: Board,
+    destination: number[],
+    startPosition: number[],
+    hasTakeSymbol: boolean
+  ): boolean {
+    const [finalRow, finalCol] = destination;
+    const [startRow, startCol] = startPosition;
 
-//   isMovingInCol(fromCol: number, toCol: number): boolean {
-//     return toCol === fromCol;
-//   }
+    if (MoveValidator.isMovingOverCol(startCol, finalCol)) {
+      return this.isValidMoveForward(startRow, finalRow, finalCol, board);
+    }
 
-//   isTwoSpacesRuleAvailable(fromRow: number, toCol: number): boolean {
-//     if (!this.hasMoved && toCol - fromRow === 2 * this.direction) {
-//       return true;
-//     }
-//     return false;
-//   }
+    if (MoveValidator.isMovingNStepsDiagonally(startRow,finalRow,startCol,finalCol,this.CAPTURE_STEPS_COL)) {
+      return this.isValidCapture(finalRow, finalCol, board, hasTakeSymbol);
+    }
 
-//   isMovingOneForward(fromRow: number, toRow: number): boolean {
-//     if (toRow - fromRow === this.direction) {
-//       return true;
-//     }
-
-//     return false;
-//   }
-
-//   isSpaceFree(toRow: number, toCol: number, board: string[][]): boolean {
-//     return board[toRow][toCol].trim() === "";
-//   }
-
-//   //TODO:Promotion Logic
-
-//   capture(to: [number, number], chessBoard: string[][]): boolean {
-//     if (!this.isCaptureValid(to, chessBoard)) {
-//       return false;
-//     }
-
-//     return true;
-//   }
-
-//   //Pawn moves one space ahead
-//   move(to: [number, number], chessBoard: string[][]): Piece | null {
-//     if (!this.isMoveValid(to, chessBoard)) {
-//       return null;
-//     }
-
-//     if (!this.hasMoved) {
-//       this.hasMoved = true;
-//     }
-
-//     return this;
-//   }
-// }
-
+    return false;
+  }
 }
