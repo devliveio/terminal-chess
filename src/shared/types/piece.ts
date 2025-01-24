@@ -1,3 +1,6 @@
+import { Piece } from "../../modules/pieces";
+import { Coordinates } from "./coordinates";
+
 export enum PieceType {
   PAWN = "P",
   BISHOP = "B",
@@ -7,7 +10,7 @@ export enum PieceType {
   KING = "K",
 }
 
-export type PieceColor = "white" | "black"
+export type PieceColor = "white" | "black";
 
 export const BLACK_PIECES_SYMBOLS: { [key in PieceType]: string } = {
   [PieceType.PAWN]: "♙",
@@ -35,3 +38,10 @@ export const PIECES_VALUES: { [key in PieceType]: number } = {
   [PieceType.QUEEN]: 9,
   [PieceType.KING]: 1000,
 };
+
+export type PiecesCoordinates = { [key: string]: Coordinates[] };
+
+export interface ValidPiece {
+  piece: Piece;
+  coordinates: Coordinates;
+}

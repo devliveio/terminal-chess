@@ -1,8 +1,7 @@
-;
 import { PieceColor, PIECES_VALUES, PieceType } from "../../shared/types";
 import { Bishop, King, Knight, Pawn, Piece, Queen, Rook } from "../pieces";
 
-class PiecesFactory {
+export class PiecesFactory {
   constructor(private color: PieceColor) {
     this.color = color;
   }
@@ -29,30 +28,26 @@ class PiecesFactory {
   }
 
   private createPawn(value: number): Piece {
-    return new Pawn(this.color, value,PieceType.PAWN);
+    return new Pawn(this.color, value, PieceType.PAWN);
   }
 
   private createRook(value: number): Piece {
-    return new Rook(this.color, value,PieceType.ROOK);
+    return new Rook(this.color, value, PieceType.ROOK);
   }
 
   private createKnight(value: number): Piece {
-    return new Knight(this.color, value,PieceType.KNIGHT);
+    return new Knight(this.color, value, PieceType.KNIGHT);
   }
 
   private createBishop(value: number): Piece {
-    return new Bishop(this.color, value,PieceType.BISHOP);
+    return new Bishop(this.color, value, PieceType.BISHOP);
   }
 
   private createQueen(value: number): Piece {
-    return new Queen(this.color, value,PieceType.QUEEN);
+    return new Queen(this.color, value, PieceType.QUEEN);
   }
 
   private createKing(value: number): Piece {
-    return new King(this.color, value,PieceType.KING);
+    return new King(this.color, value, PieceType.KING);
   }
 }
-
-export const whitePiecesFactory = new PiecesFactory("white")
-
-export const blackPiecesFactory = new PiecesFactory("black")

@@ -1,2 +1,4 @@
-export * from "./piece.type"
-export * from "./move.type"
+export * from "./piece";
+export * from "./move";
+export * from "./coordinates";
+export * from "./board";

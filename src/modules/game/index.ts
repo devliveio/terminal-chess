@@ -1,62 +1,62 @@
-import * as PromptSync from 'prompt-sync'
+import * as PromptSync from "prompt-sync";
 
-import { ChessBoard } from '../board'
+import { ChessBoard } from "../board";
 
-import { InvalidMoveError } from '../error'
+import { InvalidMoveError } from "../error";
 
-import { MoveHandler } from '../move-handler'
+import { PieceColor } from "../../shared/types";
 
-import { PieceColor } from '../../shared/types'
-
-const prompt = PromptSync()
+const prompt = PromptSync();
 
 export class Game {
-  private board: ChessBoard
-  private moveHandler: MoveHandler = new MoveHandler()
+  private board: ChessBoard;
 
   constructor() {
-    this.board = new ChessBoard()
+    this.board = new ChessBoard();
   }
 
   play() {
-    let turn: PieceColor = 'white'
-    let showInformation: boolean = true
-    let numOfTurns: number = 1
+    let turn: PieceColor = "white";
+    let showInformation: boolean = true;
+    let numOfTurns: number = 1;
 
-    console.log('Welcome to Terminal Chess')
+    console.log("Welcome to Terminal Chess");
 
     while (true) {
-      console.log(`TURN ${numOfTurns}`)
+      console.log(`TURN ${numOfTurns}`);
 
-      showInformation && this.printRules()
+      showInformation && this.printRules();
 
-      this.board.print()
+      this.board.print();
 
-      console.log(`It is ${turn}´s turn`)
+      console.log(`It is ${turn}´s turn`);
 
-      const input: string = prompt('Enter your move: ') || ''
+      const input: string = prompt("Enter your move: ") || "";
 
-      if (input === 'exit') break
+      if (input === "exit") break;
 
-      if (input === 'info') {
-        showInformation = !showInformation
-        continue
+      if (input === "info") {
+        showInformation = !showInformation;
+        continue;
       }
 
       try {
-        this.moveHandler.processMove(input, turn, this.board)
+        this.board.move(input, turn);
+
         if (this.endGame()) {
-          console.log('Checkmate')
-          return
+          console.log("Checkmate");
+          return;
         }
-        turn = turn === 'white' ? 'black' : 'white'
-        numOfTurns++
+
+        turn = turn === "white" ? "black" : "white";
+
+        numOfTurns++;
       } catch (error) {
         if (error instanceof InvalidMoveError) {
-          console.log(`Invalid Move: ${error.message}, please try again`)
+          console.log(`Invalid Move: ${error.message}, please try again`);
         } else {
-          console.error('Unexpected error occurred:', error)
-          break
+          console.error("Unexpected error occurred:", error);
+          break;
         }
       }
     }
@@ -64,7 +64,7 @@ export class Game {
 
   endGame(): boolean {
     //TODO:Implementar logica de fin de juego
-    return false
+    return false;
   }
 
   private printRules() {
@@ -80,15 +80,13 @@ export class Game {
       - Example move with capture: 'Nxf3' (Knight captures piece on f3)
       - Example castling: '0-0' (King side castling)
       - 'exit': End the game
-      - 'toggle': toggle information log
-  `)
+      - 'info': show|hide Information
+  `);
   }
 }
 
-const board = new ChessBoard()
-board.move('e4')
-board.move('e5')
-board.move('Kf3')
-board.move('Kc6')
-board.move('d4')
-board.move('exd4')
+const board = new ChessBoard();
+board.move("e4", "white");
+board.print();
+board.move("e5", "white");
+board.print();

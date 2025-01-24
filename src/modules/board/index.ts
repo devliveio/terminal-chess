@@ -1,15 +1,29 @@
-import { BLACK_PIECES_SYMBOLS, PieceColor, PieceType, WHITE_PIECES_SYMBOLS } from '../../shared/types'
-import { Piece } from '../pieces'
-import { blackPiecesFactory, whitePiecesFactory } from '../pieces-factory'
-import { PieceManager } from '../pieces-manager'
+import { Piece } from "../pieces";
 
-type Board = (Piece | null)[][]
-type Coordinate = [number, number]
+import { InvalidMoveError } from "../error";
 
-const FIRST_BOARD_ROW = 0
-const LAST_BOARD_ROW = 7
+import { PiecesFactory } from "../pieces-factory";
 
-const orderedPiecesRow: PieceType[] = [
+import { MoveValidator } from "../move/validator";
+
+import { MoveHandler } from "../move/handler";
+
+import {
+  BLACK_PIECES_SYMBOLS,
+  Coordinates,
+  NotationComponents,
+  PieceColor,
+  PiecesCoordinates,
+  PieceType,
+  ValidPiece,
+  WHITE_PIECES_SYMBOLS,
+  Board,
+} from "../../shared/types";
+
+const FIRST_BOARD_ROW = 0;
+const LAST_BOARD_ROW = 7;
+
+const backRowPieces: PieceType[] = [
   PieceType.ROOK,
   PieceType.KNIGHT,
   PieceType.BISHOP,
@@ -18,84 +32,214 @@ const orderedPiecesRow: PieceType[] = [
   PieceType.BISHOP,
   PieceType.KNIGHT,
   PieceType.ROOK,
-]
+];
 
 export class ChessBoard {
-  private board: Board
-  private pieceManager: PieceManager = new PieceManager()
+  private board: Board;
+  private pieceRegistry: PiecesCoordinates;
+  private whitePiecesFactory: PiecesFactory;
+  private blackPiecesFactory: PiecesFactory;
+  private moveHandler: MoveHandler;
 
   constructor() {
-    const size = { length: LAST_BOARD_ROW + 1 }
+    const size = { length: LAST_BOARD_ROW + 1 };
 
-    this.board = Array.from(size, () =>
-      Array.from(size, () => null)
-    )
+    this.board = Array.from(size, () => Array.from(size, () => null));
 
-    this.addPieces()
-  }
+    this.whitePiecesFactory = new PiecesFactory("white");
 
-  public getPieceAtPosition([row, col]: [number, number]): Piece | null {
-    return this.board[row][col]
-  }
+    this.blackPiecesFactory = new PiecesFactory("black");
 
-  private addPieces(): void {
-    this.prepareRows(FIRST_BOARD_ROW, 'white')
-    this.prepareRows(LAST_BOARD_ROW, 'black')
-  }
+    this.pieceRegistry = {};
 
-  private prepareRows(rowIndex: number, color: PieceColor): void {
+    this.moveHandler = new MoveHandler();
 
-    orderedPiecesRow.forEach((piece, index) => {
-      this.createPiece(piece, [rowIndex, index], color)
-      this.createPiece(PieceType.PAWN, [rowIndex + (color === 'white' ? 1 : -1), index], color)
-    })
-  }
-
-  private createPiece(pieceType: PieceType, position: Coordinate, color: PieceColor): void {
-    const newPiece = color === 'white'
-      ? whitePiecesFactory.createPiece(pieceType)
-      : blackPiecesFactory.createPiece(pieceType)
-    this.board[position[0]][position[1]] = newPiece
-    this.pieceManager.setPiecesLocation(newPiece, position)
-  }
-
-  updatePiecePositionInBoard(currentPosition: Coordinate, nextPosition: Coordinate | null, piece: Piece): void {
-    this.board[currentPosition[0]][currentPosition[1]] = null
-    if(nextPosition){
-      this.board[nextPosition[0]][nextPosition[1]] = piece
-    }
-    this.pieceManager.updatePiecePosition(`${piece.color}-${piece.type}`, currentPosition, nextPosition)
-  }
-
-  getPiecesLocation(index:string):(number[]|null)[] {
-    return this.pieceManager.getPiecesLocation(index)
+    this.addPieces();
   }
 
   print(): void {
-    const topBorder = '  +----+----+----+----+----+----+----+----+'
-    console.log('    a     b    c    d    e    f    g    h ')
-    console.log(topBorder)
+    const topBorder = "  +----+----+----+----+----+----+----+----+";
+    console.log("    a     b    c    d    e    f    g    h ");
+    console.log(topBorder);
 
     for (let row = this.board.length - 1; row >= 0; row--) {
       const rowString =
         this.board[row]
           .map((piece) => {
-            let cellSymbol: string = ' '
+            let cellSymbol: string = " ";
             if (piece) {
               cellSymbol =
-                piece.color === 'white'
+                piece.color === "white"
                   ? WHITE_PIECES_SYMBOLS[piece.type]
-                  : BLACK_PIECES_SYMBOLS[piece.type]
+                  : BLACK_PIECES_SYMBOLS[piece.type];
             }
 
-            return `| ${cellSymbol} `
+            return `| ${cellSymbol} `;
           })
-          .join(' ') + ' |'
+          .join(" ") + " |";
 
-      console.log(`${row + 1} ${rowString} ${row + 1}`)
-      console.log(topBorder)
+      console.log(`${row + 1} ${rowString} ${row + 1}`);
+      console.log(topBorder);
     }
 
-    console.log('    a     b    c    d    e    f    g    h ')
+    console.log("    a     b    c    d    e    f    g    h ");
+  }
+
+  move(notation: string, turn: PieceColor): void {
+    const notationComponents: NotationComponents | null =
+      this.getNotationComponents(notation);
+
+    if (!notationComponents) {
+      throw new InvalidMoveError("Incorrect Format");
+    }
+
+    const { piece, destination } = notationComponents;
+
+    const destinationCoordinates =
+      this.getPositionFromNotationComponent(destination);
+
+    const isMoveInBounds = MoveValidator.isCoordinateInBounds(
+      destinationCoordinates,
+      this.board.length
+    );
+
+    if (!isMoveInBounds) {
+      throw new InvalidMoveError("Move is out of bounds");
+    }
+
+    const index = `${turn}-${piece}`;
+
+    const pieces = this.getPiecesAtCoordinates(this.pieceRegistry[index]);
+
+    if (pieces.length === 0) {
+      throw new InvalidMoveError("Don´t have selected piece");
+    }
+
+    const pieceToMove = this.moveHandler.processMove(
+      pieces,
+      this.pieceRegistry[index],
+      destinationCoordinates,
+      notationComponents,
+      this.board
+    );
+
+    this.updatePiecePositionInBoard(pieceToMove, destinationCoordinates);
+  }
+
+  private getPositionFromNotationComponent(notation: string): [number, number] {
+    const file = notation.charCodeAt(0) - "a".charCodeAt(0);
+    const rank = parseInt(notation[1]) - 1;
+    return [rank, file];
+  }
+
+  private getNotationComponents(notation: string): NotationComponents | null {
+    const notationRegex = /^([KQRBN]?)([a-h]?)(x?)([a-h][1-8])$/;
+    const match = notation.match(notationRegex);
+    if (!match) {
+      return null;
+    }
+    const [_, piece, ambiguity, takeSymbol, destination] = match;
+
+    return {
+      piece: piece || PieceType.PAWN,
+      ambiguityBreaker: ambiguity || null,
+      takeSymbolPresent: takeSymbol === "x",
+      destination,
+    };
+  }
+
+  private getPiecesAtCoordinates(positions: Coordinates[]): Piece[] {
+    return positions.map(([row, col]) => this.board[row][col]!);
+  }
+
+  private addPieces(): void {
+    this.addPiecesToRow(FIRST_BOARD_ROW, "white");
+    this.addPiecesToRow(LAST_BOARD_ROW, "black");
+  }
+
+  private addPiecesToRow(rowIndex: number, color: PieceColor): void {
+    backRowPieces.forEach((piece, colIndex) => {
+      this.createPiece(piece, [rowIndex, colIndex], color);
+      this.createPiece(
+        PieceType.PAWN,
+        [rowIndex + (color === "white" ? 1 : -1), colIndex],
+        color
+      );
+    });
+  }
+
+  private createPiece(
+    pieceType: PieceType,
+    [row, col]: Coordinates,
+    color: PieceColor
+  ): void {
+    const newPiece =
+      color === "white"
+        ? this.whitePiecesFactory.createPiece(pieceType)
+        : this.blackPiecesFactory.createPiece(pieceType);
+    this.board[row][col] = newPiece;
+    this.addPieceToRegistry(newPiece, [row, col]);
+  }
+
+  private addPieceToRegistry(piece: Piece, coordinates: Coordinates) {
+    const index = `${piece.color}-${piece.type}`;
+    if (this.pieceRegistry[index]) {
+      this.pieceRegistry[index].push(coordinates);
+    } else {
+      this.pieceRegistry[index] = [coordinates];
+    }
+  }
+
+  private updatePiecesRegistry(
+    piece: Piece,
+    oldCoordinates: Coordinates,
+    newCoordinates: Coordinates
+  ) {
+    const index = `${piece.color}-${piece.type}`;
+    if (!this.pieceRegistry[index]) {
+      throw new Error("Piece not found in registry");
+    } else {
+      this.pieceRegistry[index] = this.pieceRegistry[index].map((registry) => {
+        const [oldRow, oldCol] = oldCoordinates;
+        const [registerRow, registerCol] = registry;
+        if (oldRow === registerRow && oldCol === registerCol) {
+          return newCoordinates;
+        } else {
+          return registry;
+        }
+      });
+    }
+  }
+
+  private deletePieceInRegistry(piece: Piece, coordinates: Coordinates) {
+    const index = `${piece.color}-${piece.type}`;
+    if (!this.pieceRegistry[index]) {
+      throw new Error("Piece not found in registry");
+    } else {
+      this.pieceRegistry[index] = this.pieceRegistry[index].filter(
+        (registry) => registry !== coordinates
+      );
+    }
+  }
+
+  private updatePiecePositionInBoard(
+    validPiece: ValidPiece,
+    nextPosition: Coordinates
+  ): void {
+    const {
+      piece,
+      coordinates: [oldRow, oldCol],
+    } = validPiece;
+    const [nextRow, nextCol] = nextPosition;
+
+    this.board[oldRow][oldCol] = null;
+    const capturePiece: Piece | null = this.board[nextRow][nextCol];
+
+    if (capturePiece) {
+      this.deletePieceInRegistry(capturePiece, nextPosition);
+    }
+
+    this.board[nextRow][nextCol] = piece;
+    this.updatePiecesRegistry(piece, [oldRow, oldCol], [nextRow, nextCol]);
   }
 }
