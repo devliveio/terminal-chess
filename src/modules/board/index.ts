@@ -1,12 +1,12 @@
-import { Piece } from "../pieces"
+import { Piece } from '../pieces'
 
-import { InvalidMoveError } from "../error"
+import { InvalidMoveError } from '../error'
 
-import { PiecesFactory } from "../pieces-factory"
+import { PiecesFactory } from '../pieces-factory'
 
-import { MoveValidator } from "../move/validator"
+import { MoveValidator } from '../move/validator'
 
-import { MoveHandler } from "../move/handler"
+import { MoveHandler } from '../move/handler'
 
 import {
   BLACK_PIECES_SYMBOLS,
@@ -18,7 +18,7 @@ import {
   ValidPiece,
   WHITE_PIECES_SYMBOLS,
   Board,
-} from "../../shared/types"
+} from '../../shared/types'
 
 const FIRST_BOARD_ROW = 0
 const LAST_BOARD_ROW = 7
@@ -46,9 +46,9 @@ export class ChessBoard {
 
     this.board = Array.from(size, () => Array.from(size, () => null))
 
-    this.whitePiecesFactory = new PiecesFactory("white")
+    this.whitePiecesFactory = new PiecesFactory('white')
 
-    this.blackPiecesFactory = new PiecesFactory("black")
+    this.blackPiecesFactory = new PiecesFactory('black')
 
     this.pieceRegistry = {}
 
@@ -58,31 +58,31 @@ export class ChessBoard {
   }
 
   print(): void {
-    const topBorder = "  +----+----+----+----+----+----+----+----+"
-    console.log("    a     b    c    d    e    f    g    h ")
+    const topBorder = '  +----+----+----+----+----+----+----+----+'
+    console.log('    a     b    c    d    e    f    g    h ')
     console.log(topBorder)
 
     for (let row = this.board.length - 1; row >= 0; row--) {
       const rowString =
         this.board[row]
           .map((piece) => {
-            let cellSymbol: string = " "
+            let cellSymbol: string = ' '
             if (piece) {
               cellSymbol =
-                piece.color === "white"
+                piece.color === 'white'
                   ? WHITE_PIECES_SYMBOLS[piece.type]
                   : BLACK_PIECES_SYMBOLS[piece.type]
             }
 
             return `| ${cellSymbol} `
           })
-          .join(" ") + " |"
+          .join(' ') + ' |'
 
       console.log(`${row + 1} ${rowString} ${row + 1}`)
       console.log(topBorder)
     }
 
-    console.log("    a     b    c    d    e    f    g    h ")
+    console.log('    a     b    c    d    e    f    g    h ')
   }
 
   move(notation: string, turn: PieceColor): void {
@@ -90,7 +90,7 @@ export class ChessBoard {
       this.getNotationComponents(notation)
 
     if (!notationComponents) {
-      throw new InvalidMoveError("Incorrect Format")
+      throw new InvalidMoveError('Incorrect Format')
     }
 
     const { piece, destination } = notationComponents
@@ -104,7 +104,7 @@ export class ChessBoard {
     )
 
     if (!isMoveInBounds) {
-      throw new InvalidMoveError("Move is out of bounds")
+      throw new InvalidMoveError('Move is out of bounds')
     }
 
     const index = `${turn}-${piece}`
@@ -112,7 +112,7 @@ export class ChessBoard {
     const pieces = this.getPiecesAtCoordinates(this.pieceRegistry[index])
 
     if (pieces.length === 0) {
-      throw new InvalidMoveError("Don´t have selected piece")
+      throw new InvalidMoveError('Don´t have selected piece')
     }
 
     const pieceToMove = this.moveHandler.processMove(
@@ -127,7 +127,7 @@ export class ChessBoard {
   }
 
   private getPositionFromNotationComponent(notation: string): [number, number] {
-    const file = notation.charCodeAt(0) - "a".charCodeAt(0)
+    const file = notation.charCodeAt(0) - 'a'.charCodeAt(0)
     const rank = parseInt(notation[1]) - 1
     return [rank, file]
   }
@@ -143,7 +143,7 @@ export class ChessBoard {
     return {
       piece: piece || PieceType.PAWN,
       ambiguityBreaker: ambiguity || null,
-      takeSymbolPresent: takeSymbol === "x",
+      takeSymbolPresent: takeSymbol === 'x',
       destination,
     }
   }
@@ -153,8 +153,8 @@ export class ChessBoard {
   }
 
   private addPieces(): void {
-    this.addPiecesToRow(FIRST_BOARD_ROW, "white")
-    this.addPiecesToRow(LAST_BOARD_ROW, "black")
+    this.addPiecesToRow(FIRST_BOARD_ROW, 'white')
+    this.addPiecesToRow(LAST_BOARD_ROW, 'black')
   }
 
   private addPiecesToRow(rowIndex: number, color: PieceColor): void {
@@ -162,7 +162,7 @@ export class ChessBoard {
       this.createPiece(piece, [rowIndex, colIndex], color)
       this.createPiece(
         PieceType.PAWN,
-        [rowIndex + (color === "white" ? 1 : -1), colIndex],
+        [rowIndex + (color === 'white' ? 1 : -1), colIndex],
         color
       )
     })
@@ -174,7 +174,7 @@ export class ChessBoard {
     color: PieceColor
   ): void {
     const newPiece =
-      color === "white"
+      color === 'white'
         ? this.whitePiecesFactory.createPiece(pieceType)
         : this.blackPiecesFactory.createPiece(pieceType)
     this.board[row][col] = newPiece
@@ -197,7 +197,7 @@ export class ChessBoard {
   ) {
     const index = `${piece.color}-${piece.type}`
     if (!this.pieceRegistry[index]) {
-      throw new Error("Piece not found in registry")
+      throw new Error('Piece not found in registry')
     } else {
       this.pieceRegistry[index] = this.pieceRegistry[index].map((registry) => {
         const [oldRow, oldCol] = oldCoordinates
@@ -214,7 +214,7 @@ export class ChessBoard {
   private deletePieceInRegistry(piece: Piece, coordinates: Coordinates) {
     const index = `${piece.color}-${piece.type}`
     if (!this.pieceRegistry[index]) {
-      throw new Error("Piece not found in registry")
+      throw new Error('Piece not found in registry')
     } else {
       this.pieceRegistry[index] = this.pieceRegistry[index].filter(
         (registry) => registry !== coordinates

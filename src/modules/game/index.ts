@@ -1,10 +1,10 @@
-import * as PromptSync from "prompt-sync"
+import * as PromptSync from 'prompt-sync'
 
-import { ChessBoard } from "../board"
+import { ChessBoard } from '../board'
 
-import { InvalidMoveError } from "../error"
+import { InvalidMoveError } from '../error'
 
-import { PieceColor } from "../../shared/types"
+import { PieceColor } from '../../shared/types'
 
 const prompt = PromptSync()
 
@@ -16,11 +16,11 @@ export class Game {
   }
 
   play() {
-    let turn: PieceColor = "white"
+    let turn: PieceColor = 'white'
     let showInformation: boolean = true
     let numOfTurns: number = 1
 
-    console.log("Welcome to Terminal Chess")
+    console.log('Welcome to Terminal Chess')
 
     while (true) {
       console.log(`TURN ${numOfTurns}`)
@@ -31,11 +31,11 @@ export class Game {
 
       console.log(`It is ${turn}´s turn`)
 
-      const input: string = prompt("Enter your move: ") || ""
+      const input: string = prompt('Enter your move: ') || ''
 
-      if (input === "exit") break
+      if (input === 'exit') break
 
-      if (input === "info") {
+      if (input === 'info') {
         showInformation = !showInformation
         continue
       }
@@ -44,18 +44,18 @@ export class Game {
         this.board.move(input, turn)
 
         if (this.endGame()) {
-          console.log("Checkmate")
+          console.log('Checkmate')
           return
         }
 
-        turn = turn === "white" ? "black" : "white"
+        turn = turn === 'white' ? 'black' : 'white'
 
         numOfTurns++
       } catch (error) {
         if (error instanceof InvalidMoveError) {
           console.log(`Invalid Move: ${error.message}, please try again`)
         } else {
-          console.error("Unexpected error occurred:", error)
+          console.error('Unexpected error occurred:', error)
           break
         }
       }
@@ -86,7 +86,7 @@ export class Game {
 }
 
 const board = new ChessBoard()
-board.move("e4", "white")
+board.move('e4', 'white')
 board.print()
-board.move("e5", "white")
+board.move('e5', 'white')
 board.print()

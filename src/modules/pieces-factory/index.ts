@@ -1,6 +1,6 @@
-import { Bishop, King, Knight, Pawn, Piece, Queen, Rook } from "../pieces"
+import { Bishop, King, Knight, Pawn, Piece, Queen, Rook } from '../pieces'
 
-import { PieceColor, PIECES_VALUES, PieceType } from "../../shared/types"
+import { PieceColor, PIECES_VALUES, PieceType } from '../../shared/types'
 
 export class PiecesFactory {
   constructor(private color: PieceColor) {

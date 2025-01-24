@@ -1,4 +1,4 @@
-export type Castling = "queenSide" | "kingSide"
+export type Castling = 'queenSide' | 'kingSide'
 
 export interface NotationComponents {
   piece: string | null

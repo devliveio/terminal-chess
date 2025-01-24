@@ -1,34 +1,34 @@
-import { Coordinates } from "./coordinates"
+import { Coordinates } from './coordinates'
 
-import { Piece } from "../../modules/pieces"
+import { Piece } from '../../modules/pieces'
 
 export enum PieceType {
-  PAWN = "P",
-  BISHOP = "B",
-  ROOK = "R",
-  KNIGHT = "N",
-  QUEEN = "Q",
-  KING = "K",
+  PAWN = 'P',
+  BISHOP = 'B',
+  ROOK = 'R',
+  KNIGHT = 'N',
+  QUEEN = 'Q',
+  KING = 'K',
 }
 
-export type PieceColor = "white" | "black"
+export type PieceColor = 'white' | 'black'
 
 export const BLACK_PIECES_SYMBOLS: { [key in PieceType]: string } = {
-  [PieceType.PAWN]: "♙",
-  [PieceType.BISHOP]: "♗",
-  [PieceType.ROOK]: "♖",
-  [PieceType.KING]: "♔",
-  [PieceType.QUEEN]: "♕",
-  [PieceType.KNIGHT]: "♘",
+  [PieceType.PAWN]: '♙',
+  [PieceType.BISHOP]: '♗',
+  [PieceType.ROOK]: '♖',
+  [PieceType.KING]: '♔',
+  [PieceType.QUEEN]: '♕',
+  [PieceType.KNIGHT]: '♘',
 }
 
 export const WHITE_PIECES_SYMBOLS: { [key in PieceType]: string } = {
-  [PieceType.PAWN]: "♟",
-  [PieceType.BISHOP]: "♝",
-  [PieceType.ROOK]: "♜",
-  [PieceType.KING]: "♚",
-  [PieceType.QUEEN]: "♛",
-  [PieceType.KNIGHT]: "♞",
+  [PieceType.PAWN]: '♟',
+  [PieceType.BISHOP]: '♝',
+  [PieceType.ROOK]: '♜',
+  [PieceType.KING]: '♚',
+  [PieceType.QUEEN]: '♛',
+  [PieceType.KNIGHT]: '♞',
 }
 
 export const PIECES_VALUES: { [key in PieceType]: number } = {

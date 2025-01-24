@@ -1,4 +1,4 @@
-import { Board, Coordinates } from "../../shared/types"
+import { Board, Coordinates } from '../../shared/types'
 
 export class MoveValidator {
   static isCoordinateInBounds([row, col]: Coordinates, size: number): boolean {

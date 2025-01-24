@@ -1,8 +1,8 @@
-import { Piece } from "."
+import { Piece } from '.'
 
-import { MoveValidator } from "../move/validator"
+import { MoveValidator } from '../move/validator'
 
-import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types"
+import { Board, Coordinates, PieceColor, PieceType } from '../../shared/types'
 
 export class Pawn extends Piece {
   private hasMoveOnce: boolean = false
@@ -14,7 +14,7 @@ export class Pawn extends Piece {
 
   constructor(color: PieceColor, value: number, type: PieceType) {
     super(color, value, type)
-    this.direction = color === "white" ? 1 : -1
+    this.direction = color === 'white' ? 1 : -1
   }
 
   private isValidMoveForward(

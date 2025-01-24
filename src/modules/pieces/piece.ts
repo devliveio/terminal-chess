@@ -1,4 +1,4 @@
-import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types"
+import { Board, Coordinates, PieceColor, PieceType } from '../../shared/types'
 
 export abstract class Piece {
   constructor(
