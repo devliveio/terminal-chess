@@ -126,7 +126,7 @@ export class ChessBoard {
     this.updatePiecePosition(pieceToMove, destinationCoordinates)
   }
 
-  private getPositionFromNotationComponent(notation: string): [number, number] {
+  private getPositionFromNotationComponent(notation: string): Coordinates {
     const file = notation.charCodeAt(0) - 'a'.charCodeAt(0)
     const rank = parseInt(notation[1]) - 1
     return [rank, file]
