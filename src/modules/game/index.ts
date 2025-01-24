@@ -4,15 +4,12 @@ import { ChessBoard } from '../board'
 
 import { InvalidMoveError } from '../error'
 
-import { MoveHandler } from '../move-handler'
-
 import { PieceColor } from '../../shared/types'
 
 const prompt = PromptSync()
 
 export class Game {
   private board: ChessBoard
-  private moveHandler: MoveHandler = new MoveHandler()
 
   constructor() {
     this.board = new ChessBoard()
@@ -44,12 +41,15 @@ export class Game {
       }
 
       try {
-        this.moveHandler.processMove(input, turn, this.board)
+        this.board.move(input, turn)
+
         if (this.endGame()) {
           console.log('Checkmate')
           return
         }
+
         turn = turn === 'white' ? 'black' : 'white'
+
         numOfTurns++
       } catch (error) {
         if (error instanceof InvalidMoveError) {
@@ -80,15 +80,13 @@ export class Game {
       - Example move with capture: 'Nxf3' (Knight captures piece on f3)
       - Example castling: '0-0' (King side castling)
       - 'exit': End the game
-      - 'toggle': toggle information log
+      - 'info': show|hide Information
   `)
   }
 }
 
 const board = new ChessBoard()
-board.move('e4')
-board.move('e5')
-board.move('Kf3')
-board.move('Kc6')
-board.move('d4')
-board.move('exd4')
+board.move('e4', 'white')
+board.print()
+board.move('e5', 'white')
+board.print()

@@ -1,126 +1,57 @@
-import { Castling, NotationComponents, PieceColor } from "../../shared/types";
-import { Board } from "../board";
-import { InvalidMoveError } from "../error";
-import { MoveValidator } from "./validator";
-import { NotationParser } from "../notation-parser";
+import { Piece } from '../pieces'
+
+import { InvalidMoveError } from '../error'
+
+import {
+  Board,
+  Coordinates,
+  NotationComponents,
+  ValidPiece,
+} from '../../shared/types'
 
 export class MoveHandler {
-  processMove(notation: string, turn: PieceColor, board: Board): void {
-    if (notation === "0-0" || notation === "0-0-0") {
-      const castlingType: Castling =
-        notation === "0-0" ? "kingSide" : "queenSide";
-      return this.castlingMove(castlingType, turn);
-    }
-
-    const notationComponents: NotationComponents | null =
-      NotationParser.getNotationComponents(notation);
-    if (!notationComponents) {
-      throw new InvalidMoveError(`Incorrect notation format: ${notation}`);
-    }
-
-    const { piece, destination } = notationComponents;
-
-    const endMoveTile = NotationParser.getPositionFromNotation(destination);
-    if (!MoveValidator.isMoveInBounds(endMoveTile, board.size)) {
-      throw new InvalidMoveError("Move is out of bound");
-    }
-
-    const index = `${turn}-${piece}`;
-
-    let piecesPosition: number[][] = board
-    .getPiecesLocation(index)
-    .filter((position): position is number[] => position !== null);
-  
-    if (piecesPosition.length === 0) {
-      throw new InvalidMoveError("Move Invalid: No pieces available");
-    }
-
-    return this.tryToMovePieces(
-      piecesPosition,
-      endMoveTile,
-      notationComponents,
-      board
-    );
-  }
-
-  public castlingMove(type: Castling, turn: PieceColor): void {
-    throw new Error("Method not implemented yet.");
-  }
-
-  private tryToMovePieces(
-    piecesPosition: number[][],
-    endPosition: number[],
+  processMove(
+    pieces: Piece[],
+    pieceRegistry: Coordinates[],
+    endCoordinates: Coordinates,
     notationComponents: NotationComponents,
     board: Board
-  ): void {
-    const { piece, ambiguityBreaker, takeSymbolPresent } = notationComponents;
+  ): ValidPiece {
+    const { ambiguityBreaker, takeSymbolPresent } = notationComponents
 
-    let validStartPositions: number[][] = this.getValidStartPosition(
-      piecesPosition,
-      endPosition,
-      takeSymbolPresent,
-      board
-    );
+    let validPieces: ValidPiece[] = []
 
-    if (validStartPositions.length === 0) {
-      throw new InvalidMoveError("No pieces available to execute move");
-    }
-
-    if (validStartPositions.length > 1) {
-      if (ambiguityBreaker) {
-        validStartPositions = this.resolveAmbiguity(
-          validStartPositions,
-          ambiguityBreaker
-        );
-      } else {
-        throw new InvalidMoveError(
-          `More than one piece can that move: No ambiguity breaker in notation: ${notationComponents}`
-        );
+    pieces.forEach((piece, index) => {
+      const currentCoordinate = pieceRegistry[index]
+      if (
+        piece.canDoMove(
+          currentCoordinate,
+          endCoordinates,
+          takeSymbolPresent,
+          board
+        )
+      ) {
+        validPieces.push({ piece: piece, coordinates: currentCoordinate })
       }
-    }
+    })
 
-    if (validStartPositions.length !== 1) {
+    if (validPieces.length > 1 && !ambiguityBreaker) {
       throw new InvalidMoveError(
-        "`More than one piece can that move: ambiguity breaker not sufficient to get one piece"
-      );
+        'More than one piece can do the move, require ambiguity breaker'
+      )
     }
 
-    return this.executeMove(validStartPositions[0], endPosition, board);
-  }
-
-  private getValidStartPosition(
-    piecesPosition: number[][],
-    endPosition: number[],
-    hasTakeSymbol: boolean,
-    board: Board
-  ): number[][] {
-    return piecesPosition.filter((startPosition) =>
-      board
-        .getPieceAtPosition(startPosition)
-        ?.isMoveValid(board, endPosition, startPosition, hasTakeSymbol)
-    );
-  }
-
-  private resolveAmbiguity(
-    piecesPosition: number[][],
-    ambiguityBreaker: string
-  ): number[][] {
-    const file = ambiguityBreaker.charCodeAt(0) - "a".charCodeAt(0);
-    const filterPieces: number[][] = piecesPosition.filter(
-      (piece) => piece && piece[1] === file
-    );
-    return filterPieces;
-  }
-
-  private executeMove(
-    startPosition: number[],
-    endPosition: number[],
-    board: Board
-  ): void {
-    const selectedPiece = board.getPieceAtPosition(startPosition);
-    if (!selectedPiece) {
-      throw new InvalidMoveError("No piece found");
+    if (validPieces.length > 1 && ambiguityBreaker) {
+      const file = ambiguityBreaker.charCodeAt(0) - 'a'.charCodeAt(0)
+      validPieces = validPieces.filter(
+        ({ coordinates: [row, col] }) => col === file
+      )
     }
-    selectedPiece?.move(board, startPosition, endPosition);
+
+    if (validPieces.length !== 1) {
+      throw new InvalidMoveError('Ambiguity breaker not sufficient')
+    }
+
+    return validPieces[0]
   }
 }
