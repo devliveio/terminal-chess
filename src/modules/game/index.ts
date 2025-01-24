@@ -76,4 +76,16 @@ export class Game {
     //TODO:Implementar logica de fin de juego
     return false
   }
+
+  private printRules() {
+
+  }
 }
+
+const board = new Board()
+board.move('e4')
+board.move('e5')
+board.move('Kf3')
+board.move('Kc6')
+board.move('d4')
+board.move('exd4')

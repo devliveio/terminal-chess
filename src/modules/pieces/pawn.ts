@@ -7,6 +7,7 @@ import { MoveValidator } from "../move-validator";
 export class Pawn extends Piece {
   private hasMoveOnce: boolean = false;
   private direction: number;
+  
   private readonly ADVANCE_STEPS:number = 2
   private readonly NORMAL_STEPS:number = 1
   private readonly CAPTURE_STEPS_COL:number = 1
