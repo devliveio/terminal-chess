@@ -1,6 +1,4 @@
-import { MoveValidator } from "../move/validator";
-
-import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types";
+import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types"
 
 export abstract class Piece {
   constructor(
@@ -8,9 +6,9 @@ export abstract class Piece {
     public value: number,
     public type: PieceType
   ) {
-    this.color = color;
-    this.value = value;
-    this.type = type;
+    this.color = color
+    this.value = value
+    this.type = type
   }
 
   public abstract canDoMove(
@@ -18,5 +16,5 @@ export abstract class Piece {
     endCoordinates: Coordinates,
     hasTakeSymbol: boolean,
     board: Board
-  ): boolean;
+  ): boolean
 }

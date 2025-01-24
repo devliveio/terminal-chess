@@ -1,18 +1,20 @@
-import { Piece } from "./piece";
-import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types";
-import { MoveValidator } from "../move/validator";
+import { Piece } from "."
+
+import { MoveValidator } from "../move/validator"
+
+import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types"
 
 export class Pawn extends Piece {
-  private hasMoveOnce: boolean = false;
-  private direction: number;
+  private hasMoveOnce: boolean = false
+  private direction: number
 
-  private readonly ADVANCE_STEPS: number = 2;
-  private readonly NORMAL_STEPS: number = 1;
-  private readonly CAPTURE_STEPS_COL: number = 1;
+  private readonly ADVANCE_STEPS: number = 2
+  private readonly NORMAL_STEPS: number = 1
+  private readonly CAPTURE_STEPS_COL: number = 1
 
   constructor(color: PieceColor, value: number, type: PieceType) {
-    super(color, value, type);
-    this.direction = color === "white" ? 1 : -1;
+    super(color, value, type)
+    this.direction = color === "white" ? 1 : -1
   }
 
   private isValidMoveForward(
@@ -22,11 +24,11 @@ export class Pawn extends Piece {
     board: Board
   ): boolean {
     if (!MoveValidator.isColPathFree(startRow, finalRow, finalCol, board)) {
-      return false;
+      return false
     }
 
     if (this.isTwoSpacesRuleAvailable(startRow, finalRow)) {
-      return true;
+      return true
     }
 
     if (
@@ -36,10 +38,10 @@ export class Pawn extends Piece {
         this.NORMAL_STEPS * this.direction
       )
     ) {
-      return true;
+      return true
     }
 
-    return false;
+    return false
   }
 
   private isValidCapture(
@@ -49,9 +51,9 @@ export class Pawn extends Piece {
     hasTakeSymbol: boolean
   ) {
     if (hasTakeSymbol && board[finalRow][finalCol]?.color !== this.color) {
-      return true;
+      return true
     }
-    return false;
+    return false
   }
 
   private isTwoSpacesRuleAvailable(
@@ -65,7 +67,7 @@ export class Pawn extends Piece {
         finalRow,
         this.ADVANCE_STEPS * this.direction
       )
-    );
+    )
   }
 
   canDoMove(
@@ -74,11 +76,11 @@ export class Pawn extends Piece {
     hasTakeSymbol: boolean,
     board: Board
   ): boolean {
-    const [finalRow, finalCol] = endCoordinates;
-    const [startRow, startCol] = startCoordinates;
+    const [finalRow, finalCol] = endCoordinates
+    const [startRow, startCol] = startCoordinates
 
     if (MoveValidator.isMovingOverCol(startCol, finalCol)) {
-      return this.isValidMoveForward(startRow, finalRow, finalCol, board);
+      return this.isValidMoveForward(startRow, finalRow, finalCol, board)
     }
 
     if (
@@ -90,9 +92,9 @@ export class Pawn extends Piece {
         this.CAPTURE_STEPS_COL
       )
     ) {
-      return this.isValidCapture(finalRow, finalCol, board, hasTakeSymbol);
+      return this.isValidCapture(finalRow, finalCol, board, hasTakeSymbol)
     }
 
-    return false;
+    return false
   }
 }

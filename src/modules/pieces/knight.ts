@@ -1,6 +1,6 @@
-import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types";
+import { Piece } from "."
 
-import { Piece } from "./piece";
+import { Board, Coordinates, PieceColor, PieceType } from "../../shared/types"
 
 export class Knight extends Piece {
   public canDoMove(
@@ -9,10 +9,10 @@ export class Knight extends Piece {
     hasTakeSymbol: boolean,
     board: Board
   ): boolean {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.")
   }
 
   constructor(color: PieceColor, value: number, type: PieceType) {
-    super(color, value, type);
+    super(color, value, type)
   }
 }

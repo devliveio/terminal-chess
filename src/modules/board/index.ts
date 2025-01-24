@@ -1,12 +1,12 @@
-import { Piece } from "../pieces";
+import { Piece } from "../pieces"
 
-import { InvalidMoveError } from "../error";
+import { InvalidMoveError } from "../error"
 
-import { PiecesFactory } from "../pieces-factory";
+import { PiecesFactory } from "../pieces-factory"
 
-import { MoveValidator } from "../move/validator";
+import { MoveValidator } from "../move/validator"
 
-import { MoveHandler } from "../move/handler";
+import { MoveHandler } from "../move/handler"
 
 import {
   BLACK_PIECES_SYMBOLS,
@@ -18,10 +18,10 @@ import {
   ValidPiece,
   WHITE_PIECES_SYMBOLS,
   Board,
-} from "../../shared/types";
+} from "../../shared/types"
 
-const FIRST_BOARD_ROW = 0;
-const LAST_BOARD_ROW = 7;
+const FIRST_BOARD_ROW = 0
+const LAST_BOARD_ROW = 7
 
 const backRowPieces: PieceType[] = [
   PieceType.ROOK,
@@ -32,87 +32,87 @@ const backRowPieces: PieceType[] = [
   PieceType.BISHOP,
   PieceType.KNIGHT,
   PieceType.ROOK,
-];
+]
 
 export class ChessBoard {
-  private board: Board;
-  private pieceRegistry: PiecesCoordinates;
-  private whitePiecesFactory: PiecesFactory;
-  private blackPiecesFactory: PiecesFactory;
-  private moveHandler: MoveHandler;
+  private board: Board
+  private pieceRegistry: PiecesCoordinates
+  private whitePiecesFactory: PiecesFactory
+  private blackPiecesFactory: PiecesFactory
+  private moveHandler: MoveHandler
 
   constructor() {
-    const size = { length: LAST_BOARD_ROW + 1 };
+    const size = { length: LAST_BOARD_ROW + 1 }
 
-    this.board = Array.from(size, () => Array.from(size, () => null));
+    this.board = Array.from(size, () => Array.from(size, () => null))
 
-    this.whitePiecesFactory = new PiecesFactory("white");
+    this.whitePiecesFactory = new PiecesFactory("white")
 
-    this.blackPiecesFactory = new PiecesFactory("black");
+    this.blackPiecesFactory = new PiecesFactory("black")
 
-    this.pieceRegistry = {};
+    this.pieceRegistry = {}
 
-    this.moveHandler = new MoveHandler();
+    this.moveHandler = new MoveHandler()
 
-    this.addPieces();
+    this.addPieces()
   }
 
   print(): void {
-    const topBorder = "  +----+----+----+----+----+----+----+----+";
-    console.log("    a     b    c    d    e    f    g    h ");
-    console.log(topBorder);
+    const topBorder = "  +----+----+----+----+----+----+----+----+"
+    console.log("    a     b    c    d    e    f    g    h ")
+    console.log(topBorder)
 
     for (let row = this.board.length - 1; row >= 0; row--) {
       const rowString =
         this.board[row]
           .map((piece) => {
-            let cellSymbol: string = " ";
+            let cellSymbol: string = " "
             if (piece) {
               cellSymbol =
                 piece.color === "white"
                   ? WHITE_PIECES_SYMBOLS[piece.type]
-                  : BLACK_PIECES_SYMBOLS[piece.type];
+                  : BLACK_PIECES_SYMBOLS[piece.type]
             }
 
-            return `| ${cellSymbol} `;
+            return `| ${cellSymbol} `
           })
-          .join(" ") + " |";
+          .join(" ") + " |"
 
-      console.log(`${row + 1} ${rowString} ${row + 1}`);
-      console.log(topBorder);
+      console.log(`${row + 1} ${rowString} ${row + 1}`)
+      console.log(topBorder)
     }
 
-    console.log("    a     b    c    d    e    f    g    h ");
+    console.log("    a     b    c    d    e    f    g    h ")
   }
 
   move(notation: string, turn: PieceColor): void {
     const notationComponents: NotationComponents | null =
-      this.getNotationComponents(notation);
+      this.getNotationComponents(notation)
 
     if (!notationComponents) {
-      throw new InvalidMoveError("Incorrect Format");
+      throw new InvalidMoveError("Incorrect Format")
     }
 
-    const { piece, destination } = notationComponents;
+    const { piece, destination } = notationComponents
 
     const destinationCoordinates =
-      this.getPositionFromNotationComponent(destination);
+      this.getPositionFromNotationComponent(destination)
 
     const isMoveInBounds = MoveValidator.isCoordinateInBounds(
       destinationCoordinates,
       this.board.length
-    );
+    )
 
     if (!isMoveInBounds) {
-      throw new InvalidMoveError("Move is out of bounds");
+      throw new InvalidMoveError("Move is out of bounds")
     }
 
-    const index = `${turn}-${piece}`;
+    const index = `${turn}-${piece}`
 
-    const pieces = this.getPiecesAtCoordinates(this.pieceRegistry[index]);
+    const pieces = this.getPiecesAtCoordinates(this.pieceRegistry[index])
 
     if (pieces.length === 0) {
-      throw new InvalidMoveError("Don´t have selected piece");
+      throw new InvalidMoveError("Don´t have selected piece")
     }
 
     const pieceToMove = this.moveHandler.processMove(
@@ -121,51 +121,51 @@ export class ChessBoard {
       destinationCoordinates,
       notationComponents,
       this.board
-    );
+    )
 
-    this.updatePiecePositionInBoard(pieceToMove, destinationCoordinates);
+    this.updatePiecePosition(pieceToMove, destinationCoordinates)
   }
 
   private getPositionFromNotationComponent(notation: string): [number, number] {
-    const file = notation.charCodeAt(0) - "a".charCodeAt(0);
-    const rank = parseInt(notation[1]) - 1;
-    return [rank, file];
+    const file = notation.charCodeAt(0) - "a".charCodeAt(0)
+    const rank = parseInt(notation[1]) - 1
+    return [rank, file]
   }
 
   private getNotationComponents(notation: string): NotationComponents | null {
-    const notationRegex = /^([KQRBN]?)([a-h]?)(x?)([a-h][1-8])$/;
-    const match = notation.match(notationRegex);
+    const notationRegex = /^([KQRBN]?)([a-h]?)(x?)([a-h][1-8])$/
+    const match = notation.match(notationRegex)
     if (!match) {
-      return null;
+      return null
     }
-    const [_, piece, ambiguity, takeSymbol, destination] = match;
+    const [_, piece, ambiguity, takeSymbol, destination] = match
 
     return {
       piece: piece || PieceType.PAWN,
       ambiguityBreaker: ambiguity || null,
       takeSymbolPresent: takeSymbol === "x",
       destination,
-    };
+    }
   }
 
   private getPiecesAtCoordinates(positions: Coordinates[]): Piece[] {
-    return positions.map(([row, col]) => this.board[row][col]!);
+    return positions.map(([row, col]) => this.board[row][col]!)
   }
 
   private addPieces(): void {
-    this.addPiecesToRow(FIRST_BOARD_ROW, "white");
-    this.addPiecesToRow(LAST_BOARD_ROW, "black");
+    this.addPiecesToRow(FIRST_BOARD_ROW, "white")
+    this.addPiecesToRow(LAST_BOARD_ROW, "black")
   }
 
   private addPiecesToRow(rowIndex: number, color: PieceColor): void {
     backRowPieces.forEach((piece, colIndex) => {
-      this.createPiece(piece, [rowIndex, colIndex], color);
+      this.createPiece(piece, [rowIndex, colIndex], color)
       this.createPiece(
         PieceType.PAWN,
         [rowIndex + (color === "white" ? 1 : -1), colIndex],
         color
-      );
-    });
+      )
+    })
   }
 
   private createPiece(
@@ -176,70 +176,74 @@ export class ChessBoard {
     const newPiece =
       color === "white"
         ? this.whitePiecesFactory.createPiece(pieceType)
-        : this.blackPiecesFactory.createPiece(pieceType);
-    this.board[row][col] = newPiece;
-    this.addPieceToRegistry(newPiece, [row, col]);
+        : this.blackPiecesFactory.createPiece(pieceType)
+    this.board[row][col] = newPiece
+    this.addPieceToRegistry(newPiece, [row, col])
   }
 
   private addPieceToRegistry(piece: Piece, coordinates: Coordinates) {
-    const index = `${piece.color}-${piece.type}`;
+    const index = `${piece.color}-${piece.type}`
     if (this.pieceRegistry[index]) {
-      this.pieceRegistry[index].push(coordinates);
+      this.pieceRegistry[index].push(coordinates)
     } else {
-      this.pieceRegistry[index] = [coordinates];
+      this.pieceRegistry[index] = [coordinates]
     }
   }
 
-  private updatePiecesRegistry(
+  private updatePieceCoordinateInRegistry(
     piece: Piece,
     oldCoordinates: Coordinates,
     newCoordinates: Coordinates
   ) {
-    const index = `${piece.color}-${piece.type}`;
+    const index = `${piece.color}-${piece.type}`
     if (!this.pieceRegistry[index]) {
-      throw new Error("Piece not found in registry");
+      throw new Error("Piece not found in registry")
     } else {
       this.pieceRegistry[index] = this.pieceRegistry[index].map((registry) => {
-        const [oldRow, oldCol] = oldCoordinates;
-        const [registerRow, registerCol] = registry;
+        const [oldRow, oldCol] = oldCoordinates
+        const [registerRow, registerCol] = registry
         if (oldRow === registerRow && oldCol === registerCol) {
-          return newCoordinates;
+          return newCoordinates
         } else {
-          return registry;
+          return registry
         }
-      });
+      })
     }
   }
 
   private deletePieceInRegistry(piece: Piece, coordinates: Coordinates) {
-    const index = `${piece.color}-${piece.type}`;
+    const index = `${piece.color}-${piece.type}`
     if (!this.pieceRegistry[index]) {
-      throw new Error("Piece not found in registry");
+      throw new Error("Piece not found in registry")
     } else {
       this.pieceRegistry[index] = this.pieceRegistry[index].filter(
         (registry) => registry !== coordinates
-      );
+      )
     }
   }
 
-  private updatePiecePositionInBoard(
+  private updatePiecePosition(
     validPiece: ValidPiece,
     nextPosition: Coordinates
   ): void {
     const {
       piece,
       coordinates: [oldRow, oldCol],
-    } = validPiece;
-    const [nextRow, nextCol] = nextPosition;
+    } = validPiece
+    const [nextRow, nextCol] = nextPosition
 
-    this.board[oldRow][oldCol] = null;
-    const capturePiece: Piece | null = this.board[nextRow][nextCol];
+    this.board[oldRow][oldCol] = null
+    const capturePiece: Piece | null = this.board[nextRow][nextCol]
 
     if (capturePiece) {
-      this.deletePieceInRegistry(capturePiece, nextPosition);
+      this.deletePieceInRegistry(capturePiece, nextPosition)
     }
 
-    this.board[nextRow][nextCol] = piece;
-    this.updatePiecesRegistry(piece, [oldRow, oldCol], [nextRow, nextCol]);
+    this.board[nextRow][nextCol] = piece
+    this.updatePieceCoordinateInRegistry(
+      piece,
+      [oldRow, oldCol],
+      [nextRow, nextCol]
+    )
   }
 }

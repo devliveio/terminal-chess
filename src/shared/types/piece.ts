@@ -1,5 +1,6 @@
-import { Piece } from "../../modules/pieces";
-import { Coordinates } from "./coordinates";
+import { Coordinates } from "./coordinates"
+
+import { Piece } from "../../modules/pieces"
 
 export enum PieceType {
   PAWN = "P",
@@ -10,7 +11,7 @@ export enum PieceType {
   KING = "K",
 }
 
-export type PieceColor = "white" | "black";
+export type PieceColor = "white" | "black"
 
 export const BLACK_PIECES_SYMBOLS: { [key in PieceType]: string } = {
   [PieceType.PAWN]: "♙",
@@ -19,7 +20,7 @@ export const BLACK_PIECES_SYMBOLS: { [key in PieceType]: string } = {
   [PieceType.KING]: "♔",
   [PieceType.QUEEN]: "♕",
   [PieceType.KNIGHT]: "♘",
-};
+}
 
 export const WHITE_PIECES_SYMBOLS: { [key in PieceType]: string } = {
   [PieceType.PAWN]: "♟",
@@ -28,7 +29,7 @@ export const WHITE_PIECES_SYMBOLS: { [key in PieceType]: string } = {
   [PieceType.KING]: "♚",
   [PieceType.QUEEN]: "♛",
   [PieceType.KNIGHT]: "♞",
-};
+}
 
 export const PIECES_VALUES: { [key in PieceType]: number } = {
   [PieceType.PAWN]: 1,
@@ -37,11 +38,11 @@ export const PIECES_VALUES: { [key in PieceType]: number } = {
   [PieceType.KNIGHT]: 3,
   [PieceType.QUEEN]: 9,
   [PieceType.KING]: 1000,
-};
+}
 
-export type PiecesCoordinates = { [key: string]: Coordinates[] };
+export type PiecesCoordinates = { [key: string]: Coordinates[] }
 
 export interface ValidPiece {
-  piece: Piece;
-  coordinates: Coordinates;
+  piece: Piece
+  coordinates: Coordinates
 }
