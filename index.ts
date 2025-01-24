@@ -1,4 +1,11 @@
-import { Game } from './src/modules/game';
+import { Game } from './src/modules/game'
 
-const chessGame = new Game()
-chessGame.play()
+const game = new Game()
+
+game.makeMove('e4')
+
+game.makeMove('e5')
+
+console.clear()
+
+game.board.print()
