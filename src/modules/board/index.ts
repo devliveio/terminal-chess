@@ -1,3 +1,4 @@
+import { Coordinates } from '../../shared/types'
 import { Piece, Pawn, Knight, Bishop, Rook, Queen, King } from '../piece'
 
 const backRow = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
@@ -17,46 +18,47 @@ export class Board {
       this.board[0][i] = new PieceClass('black')
       this.board[7][i] = new PieceClass('white')
     })
-
   }
 
   public print(): void {
-    const topBorder = '  +----+----+----+----+----+----+----+----+';
-    const columnLabels = '    a    b    c    d    e    f    g    h ';
-  
-    console.log(columnLabels);
-    console.log(topBorder);
-  
+    const topBorder = '  +----+----+----+----+----+----+----+----+'
+    const columnLabels = '    a    b    c    d    e    f    g    h '
+
+    console.log(columnLabels)
+    console.log(topBorder)
+
     for (let row = 7; row >= 0; row--) {
-      let rowString = `${row + 1} `;
-  
+      let rowString = `${row + 1} `
+
       for (let col = 0; col < 8; col++) {
-        const piece = this.board[row][col];
-        const pieceSymbol = piece ? piece.toString() : ' ';
-        rowString += `| ${pieceSymbol}  `;
+        const piece = this.board[row][col]
+        const pieceSymbol = piece ? piece.toString() : ' '
+        rowString += `| ${pieceSymbol}  `
       }
-  
-      rowString += `| ${row + 1}`;
-      console.log(rowString);
-      console.log(topBorder);
+
+      rowString += `| ${row + 1}`
+      console.log(rowString)
+      console.log(topBorder)
     }
-  
-    console.log(columnLabels);
+
+    console.log(columnLabels)
   }
 
-  getPieceAt(position: string): Piece | null {
-    const [row, col] = this.positionToIndices(position)
+  getPieceAt(position: Coordinates): Piece | null {
+    const [row, col] = position
     return this.board[row][col]
   }
 
   movePiece(from: string, to: string, currentTurn: 'white' | 'black'): boolean {
-    const piece = this.getPieceAt(from)
+    const [fromRow, fromCol] = this.positionToIndices(from)
 
-    if (!piece || piece.color !== currentTurn) return false;
+    const piece = this.getPieceAt([fromRow, fromCol])
 
-    if (piece.canMove(from, to, this)) {
-      const [fromRow, fromCol] = this.positionToIndices(from)
-      const [toRow, toCol] = this.positionToIndices(to)
+    if (!piece || piece.color !== currentTurn) return false
+
+    const [toRow, toCol] = this.positionToIndices(to)
+
+    if (piece.canMove([fromRow, fromCol], [toRow, toCol], this)) {
       this.board[toRow][toCol] = piece
       this.board[fromRow][fromCol] = null
 
@@ -82,7 +84,7 @@ export class Board {
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         if (this.board[row][col] === piece) {
-          return this.indicesToPosition(row, col);
+          return this.indicesToPosition(row, col)
         }
       }
     }
