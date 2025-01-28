@@ -1,3 +1,4 @@
+import { Coordinates } from './../../shared/types/coordinates'
 import { Board } from '../board'
 
 export class Game {
@@ -12,7 +13,11 @@ export class Game {
   }
 
   makeMove(move: string): boolean {
-    const parsedMove = this.notation.parseMove(move, this.board, this.currentTurn)
+    const parsedMove = this.notation.parseMove(
+      move,
+      this.board,
+      this.currentTurn
+    )
     if (!parsedMove) return false
 
     const { from, to } = parsedMove
@@ -26,12 +31,17 @@ export class Game {
 }
 
 class Notation {
-  parseMove(move: string, board: Board, currentTurn: 'white' | 'black'): { from: string; to: string } | null {
+  parseMove(
+    move: string,
+    board: Board,
+    currentTurn: 'white' | 'black'
+  ): { from: string; to: string } | null {
     const match = move.match(/^([KQBNR]?)([a-h]?)([1-8]?)(x?)([a-h][1-8])$/)
     if (!match) return null
 
-    const [, pieceSymbol, fileHint, rankHint, capture, to] = match
+    const [, pieceSymbol, fileHint, rankHint, capture, destination] = match
     const targetPieceType = this.getPieceType(pieceSymbol)
+    const to: Coordinates = board.positionToIndices(destination)
 
     const toPiece = board.getPieceAt(to)
     if (capture && (!toPiece || toPiece.color === currentTurn)) return null
@@ -39,7 +49,7 @@ class Notation {
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const position = board.indicesToPosition(row, col)
-        const piece = board.getPieceAt(position)
+        const piece = board.getPieceAt([row, col])
 
         if (
           piece &&
@@ -47,9 +57,9 @@ class Notation {
           piece.constructor.name === targetPieceType &&
           (!fileHint || position[0] === fileHint) &&
           (!rankHint || position[1] === rankHint) &&
-          piece.canMove(position, to, board)
+          piece.canMove([row, col], to, board)
         ) {
-          return { from: position, to }
+          return { from: position, to: destination }
         }
       }
     }
@@ -59,12 +69,18 @@ class Notation {
 
   getPieceType(symbol: string): string {
     switch (symbol) {
-      case 'K': return 'King'
-      case 'Q': return 'Queen'
-      case 'R': return 'Rook'
-      case 'B': return 'Bishop'
-      case 'N': return 'Knight'
-      default: return 'Pawn'
+      case 'K':
+        return 'King'
+      case 'Q':
+        return 'Queen'
+      case 'R':
+        return 'Rook'
+      case 'B':
+        return 'Bishop'
+      case 'N':
+        return 'Knight'
+      default:
+        return 'Pawn'
     }
   }
 }
