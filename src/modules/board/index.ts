@@ -42,6 +42,7 @@ export class Board {
     }
 
     console.log(columnLabels)
+    console.log('    ---------------END TURN----------------')
   }
 
   getPieceAt(position: Coordinates): Piece | null {

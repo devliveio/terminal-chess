@@ -52,15 +52,6 @@ class Notation {
         const position = board.indicesToPosition(row, col)
         const piece = board.getPieceAt(currentCell)
 
-        console.log(
-          [row, col],
-          piece,
-          piece?.color === currentTurn,
-          piece?.constructor.name === targetPieceType,
-          !fileHint || position[0] === fileHint,
-          !rankHint || position[1] === rankHint
-        )
-
         if (!piece) continue
 
         if (piece.color !== currentTurn) continue
