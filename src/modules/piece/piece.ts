@@ -7,11 +7,15 @@ export abstract class Piece {
   public value: number
 
   constructor(color: PieceColor, value: number) {
-    this.color = color;
+    this.color = color
     this.value = value
   }
 
-  abstract canMove(from: string, to: string, board: Board): boolean;
+  abstract canMove(
+    from: [number, number],
+    to: [number, number],
+    board: Board
+  ): boolean
 
-  abstract toString(): string;
+  abstract toString(): string
 }
