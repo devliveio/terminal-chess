@@ -10,13 +10,13 @@ export class Board {
     this.board = Array.from({ length: 8 }, () => Array(8).fill(null))
 
     for (let i = 0; i < 8; i++) {
-      this.board[1][i] = new Pawn('black')
-      this.board[6][i] = new Pawn('white')
+      this.board[1][i] = new Pawn('white')
+      this.board[6][i] = new Pawn('black')
     }
 
     backRow.forEach((PieceClass, i) => {
-      this.board[0][i] = new PieceClass('black')
-      this.board[7][i] = new PieceClass('white')
+      this.board[0][i] = new PieceClass('white')
+      this.board[7][i] = new PieceClass('black')
     })
   }
 
@@ -27,16 +27,16 @@ export class Board {
     console.log(columnLabels)
     console.log(topBorder)
 
-    for (let row = 7; row >= 0; row--) {
-      let rowString = `${row + 1} `
+    for (let row = 0; row < 8; row++) {
+      let rowString = `${8 - row} `
 
       for (let col = 0; col < 8; col++) {
-        const piece = this.board[row][col]
+        const piece = this.board[7 - row][col]
         const pieceSymbol = piece ? piece.toString() : ' '
         rowString += `| ${pieceSymbol}  `
       }
 
-      rowString += `| ${row + 1}`
+      rowString += `| ${8 - row}`
       console.log(rowString)
       console.log(topBorder)
     }
@@ -49,34 +49,27 @@ export class Board {
     return this.board[row][col]
   }
 
-  movePiece(from: string, to: string, currentTurn: 'white' | 'black'): boolean {
-    const [fromRow, fromCol] = this.positionToIndices(from)
+  movePiece(from: Coordinates, to: Coordinates): boolean {
+    const [fromRow, fromCol] = from
+    const [toRow, toCol] = to
 
     const piece = this.getPieceAt([fromRow, fromCol])
 
-    if (!piece || piece.color !== currentTurn) return false
+    this.board[toRow][toCol] = piece
+    this.board[fromRow][fromCol] = null
 
-    const [toRow, toCol] = this.positionToIndices(to)
-
-    if (piece.canMove([fromRow, fromCol], [toRow, toCol], this)) {
-      this.board[toRow][toCol] = piece
-      this.board[fromRow][fromCol] = null
-
-      return true
-    }
-
-    return false
+    return true
   }
 
   positionToIndices(position: string): [number, number] {
     const col = position.charCodeAt(0) - 'a'.charCodeAt(0)
-    const row = 8 - parseInt(position[1])
+    const row = parseInt(position[1]) - 1
     return [row, col]
   }
 
   indicesToPosition(row: number, col: number): string {
     const file = String.fromCharCode('a'.charCodeAt(0) + col)
-    const rank = (8 - row).toString()
+    const rank = (row + 1).toString()
     return `${file}${rank}`
   }
 

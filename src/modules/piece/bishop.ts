@@ -1,4 +1,4 @@
-import { Piece, Rook } from '.'
+import { Piece } from '.'
 
 import { Board } from '../board'
 
@@ -42,6 +42,6 @@ export class Bishop extends Piece {
   }
 
   toString(): string {
-    return this.color === 'white' ? '♗' : '♝'
+    return this.color === 'white' ? '♝' : '♗'
   }
 }

@@ -21,7 +21,7 @@ export class Game {
     if (!parsedMove) return false
 
     const { from, to } = parsedMove
-    if (this.board.movePiece(from, to, this.currentTurn)) {
+    if (this.board.movePiece(from, to)) {
       this.currentTurn = this.currentTurn === 'white' ? 'black' : 'white'
       return true
     }
@@ -35,7 +35,7 @@ class Notation {
     move: string,
     board: Board,
     currentTurn: 'white' | 'black'
-  ): { from: string; to: string } | null {
+  ): { from: Coordinates; to: Coordinates } | null {
     const match = move.match(/^([KQBNR]?)([a-h]?)([1-8]?)(x?)([a-h][1-8])$/)
     if (!match) return null
 
@@ -48,19 +48,32 @@ class Notation {
 
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
+        const currentCell: Coordinates = [row, col]
         const position = board.indicesToPosition(row, col)
-        const piece = board.getPieceAt([row, col])
+        const piece = board.getPieceAt(currentCell)
 
-        if (
-          piece &&
-          piece.color === currentTurn &&
-          piece.constructor.name === targetPieceType &&
-          (!fileHint || position[0] === fileHint) &&
-          (!rankHint || position[1] === rankHint) &&
-          piece.canMove([row, col], to, board)
-        ) {
-          return { from: position, to: destination }
-        }
+        console.log(
+          [row, col],
+          piece,
+          piece?.color === currentTurn,
+          piece?.constructor.name === targetPieceType,
+          !fileHint || position[0] === fileHint,
+          !rankHint || position[1] === rankHint
+        )
+
+        if (!piece) continue
+
+        if (piece.color !== currentTurn) continue
+
+        if (piece.constructor.name !== targetPieceType) continue
+
+        if (fileHint && position[0] !== fileHint) continue
+
+        if (rankHint && position[1] !== rankHint) continue
+
+        if (!piece.canMove(currentCell, to, board)) continue
+
+        return { from: currentCell, to }
       }
     }
 

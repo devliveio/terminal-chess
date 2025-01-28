@@ -30,6 +30,6 @@ export class Knight extends Piece {
   }
 
   toString(): string {
-    return this.color === 'white' ? '♘' : '♞'
+    return this.color === 'white' ? '♞' : '♘'
   }
 }
